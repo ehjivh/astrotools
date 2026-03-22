@@ -61,39 +61,9 @@
 		}
 	</style>
 
-	<script src="src/js/observer.js"></script>
-	<script src="src/js/datetime.js"></script>
-	<script src="src/js/cookie.js"></script>
-	<script src="src/js/makelist.js"></script>
-	<script src="src/js/makepage.js"></script>
-	<script src="src/js/planets.js"></script>
-	<script src="src/js/sunmoon.js"></script>
-	<script src="src/js/comet.js"></script>
-	<script src="src/js/stars.js"></script>
-	<script src="src/js/util.js"></script>
-	<script src="src/js/math.js"></script>
-	<script src="src/js/events.js"></script>
-	<script src="src/js/handlers.js"></script>
-
-	<script>
-		var timer_on = false;		// if true show timer alert box, for measuring performance
-		var debug_on = false;
-
-		var datecount = new Array(1, 2, 3, 5, 7, 10, 14, 18, 21, 28, -1, -2, -3, -6, -12, -24, -60, -120, -240, -600, -1200);
-		var daystep = new Array(1 / 24.0, 1 / 12.0, 1 / 6.0, 0.25, 0.5, 1, 2, 3, 4, 5, 7, 10, 14, 21, 27.3217, 28, 29.5306, -1, -2, -3, -6, -12, -24, -60);
-		var objlist = new Array(9, 10, 0, 1, 3, 4, 5, 6, 7, 15, 20, 100);	// object numbers (object options)
-
-		var aastep = new Array(5, 10, 15, 30, 60, 120);	// options for alt/az time steps
-		var obj2 = new Array(9, 10, 0, 1, 3, 4, 5, 6, 7, 20); // object numbers for second objects (separation)
-		var twl_alt = new Array(-0.833, -6.0, -12.0, -18.0); // options for sun depression angle for twilight alt/az
-		var cut_alt = new Array(0, 5, 10, 15, 20, 25, 30);  // options for star/dso min altitude
-		VIS = 0; DAT = 2; POS = 3; A_A = 4; TWI = 5; SEP = 6; L_EV = 8; P_EV = 9; STAR = 10; DEC = 0; LON = 1; ELON = 2;
-
-		// all form handling functions moved to handlers.js
-	</script>
 </head>
 
-<body onLoad="getCookie('HOME',observer)">
+<body>
 
 	<h3>JavaScript AstroTools</h3>
 	<h1>天体暦ツール</h1>
@@ -405,37 +375,7 @@
 
 	</div>
 
-	<!-- Initialize the tables in the form -->
-
-	<script>
-
-		var tbl = document.table1; /* used globally to reference form elements */
-
-		tbl.Place.options.length = 0;
-		for (var i = 0; i < atlas.length; i++) {
-			tbl.Place.options[tbl.Place.options.length] = new Option(atlas[i].name);
-		}
-		reset1();
-
-		// Add all star and dso objects from 'stars.js' to the drop down lists
-		tbl.fixstar.options.length = 1;
-		for (var i = 0; i < stars.length; i++) {
-			tbl.fixstar.options[tbl.fixstar.options.length] = new Option(stars[i].star + " " + stars[i].cons);
-		}
-
-		tbl.deepskyobj.options.length = 1;
-		for (var i = 0; i < dso.length; i++) {
-			tbl.deepskyobj.options[tbl.deepskyobj.options.length] = new Option(dso[i].numb);
-		}
-
-		add_comets();
-		tbl.comet.options.length = 1;
-		for (var i = 0; i < comets.length; i++) {
-			tbl.comet.options[tbl.comet.options.length] = new Option(comets[i].name);
-		}
-		tbl.perihel.value = "";
-
-	</script>
+	<script type="module" src="src/js/entries/ephemtool-entry.js"></script>
 
 	<p><a href="toolsmanual.html#copyright" target="_blank">Copyright &copy; Ole Nielsen 2002-2005 </a></p>
 

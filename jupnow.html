@@ -148,11 +148,6 @@
 		}
 	</style>
 
-	<script src="src/js/observer.js"></script>
-	<script src="src/js/datetime.js"></script>
-	<script src="src/js/util.js"></script>
-	<script src="src/js/math.js"></script>
-	<script src="src/js/jupiter.js"></script>
 </head>
 
 <body>
@@ -183,7 +178,17 @@
 		</section>
 	</main>
 
-	<script>
+	<script type="module">
+		import { loadLegacyScripts } from "./src/js/entries/legacy-loader.js";
+
+		await loadLegacyScripts([
+			"src/js/observer.js",
+			"src/js/datetime.js",
+			"src/js/util.js",
+			"src/js/math.js",
+			"src/js/jupiter.js"
+		]);
+
 		var tbl = { Place: { selectedIndex: 0 } };
 		var satNames = ["イオ", "エウロパ", "ガニメデ", "カリスト"];
 		var canvas = document.getElementById("view");

@@ -50,24 +50,9 @@
 		}
 	</style>
 
-	<script src="src/js/observer.js"></script>
-	<script src="src/js/datetime.js"></script>
-	<script src="src/js/cookie.js"></script>
-	<script src="src/js/util.js"></script>
-	<script src="src/js/math.js"></script>
-	<script src="src/js/juphandlers.js"></script>
-	<script src="src/js/jupdraw.js"></script>
-	<script src="src/js/jupiter.js"></script>
-
-	<script>
-		var timer_on = false;		// if true show timer alert box, for measuring performance
-		var debug = true;
-
-		// all form handling functions moved to handlers.js
-	</script>
 </head>
 
-<body onLoad="getCookie('HOME',observer)">
+<body>
 
 	<h1>木星の衛星の見え方（ガリレオ衛星）</h1>
 
@@ -81,9 +66,6 @@
 			<td>
 				<div id="container" style="position:relative; height:220px; width:700px; margin-left:0px auto; padding:0px;">
 					<div id="bgr" style="position:absolute; width: 700px; height:220px; background:black;"></div>
-					<script>
-						j_init();	// make initial drawing
-					</script>
 				</div>
 			</td>
 		</tr>
@@ -199,18 +181,54 @@
 	</form>
 
 
-	<!-- Initialize the tables in the form -->
-
 	<script>
+		(function () {
+			if (location.protocol !== "file:") {
+				const mod = document.createElement("script");
+				mod.type = "module";
+				mod.src = "src/js/entries/juptool-entry.js";
+				document.body.appendChild(mod);
+				return;
+			}
 
-		var tbl = document.table1; /* used globally to reference form elements */
+			const files = [
+				"src/js/observer.js",
+				"src/js/datetime.js",
+				"src/js/cookie.js",
+				"src/js/util.js",
+				"src/js/math.js",
+				"src/js/juphandlers.js",
+				"src/js/jupdraw.js",
+				"src/js/jupiter.js"
+			];
 
-		tbl.Place.options.length = 0;
-		for (var i = 0; i < atlas.length; i++) {
-			tbl.Place.options[tbl.Place.options.length] = new Option(atlas[i].name);
-		}
-		reset1();
+			let idx = 0;
+			function loadNext() {
+				if (idx >= files.length) {
+					window.timer_on = false;
+					window.debug = true;
+					window.tbl = document.table1;
+					tbl.Place.options.length = 0;
+					for (let i = 0; i < atlas.length; i++) {
+						tbl.Place.options[tbl.Place.options.length] = new Option(atlas[i].name);
+					}
+					reset1();
+					getCookie("HOME", observer);
+					return;
+				}
 
+				const s = document.createElement("script");
+				s.src = files[idx++];
+				s.async = false;
+				s.onload = loadNext;
+				s.onerror = function () {
+					console.error("Failed to load script:", s.src);
+				};
+				document.head.appendChild(s);
+			}
+
+			loadNext();
+		})();
 	</script>
 
 	<p><a href="jupmanual.html#copyright" target="_blank">Copyright &copy; Ole Nielsen 2004-2005.

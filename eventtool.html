@@ -66,28 +66,9 @@ lunar phase, equinox, solstice, perigee, apogee, conjunction, opposition, elonga
 		}
 	</style>
 
-	<script src="src/js/observer.js"></script>
-	<script src="src/js/datetime.js"></script>
-	<script src="src/js/cookie.js"></script>
-	<script src="src/js/planets.js"></script>
-	<script src="src/js/sunmoon.js"></script>
-	<script src="src/js/makeevent.js"></script>
-	<script src="src/js/util.js"></script>
-	<script src="src/js/math.js"></script>
-	<script src="src/js/eventhandlers.js"></script>
-
-	<script>
-		var timer_on = false;		// if true show timer alert box, for measuring performance
-		var debug_on = false;
-
-		var datecount = new Array(1, 2, 3, 5, 7, 10, 14, 18, 21, 28, -1, -2, -3, -6, -12, -24, -60, -120, -240, -600, -1200);
-		var daystep = new Array(1 / 24.0, 1 / 12.0, 1 / 6.0, 0.25, 0.5, 1, 2, 3, 4, 5, 7, 10, 14, 21, 27.3217, 28, 29.5306, -1, -2, -3, -6, -12, -24, -60);
-		var objlist = new Array(9, 10, 0, 1, 3, 4, 5, 6, 7, 15, 20, 100);	// object numbers (object options)
-		var SEL_EV = 0, SEASON = 1, PHASE = 2, ALL_EV = 3;
-	</script>
 </head>
 
-<body onLoad="getCookie('HOME',observer)">
+<body>
 
 	<h3>JavaScript AstroTools</h3>
 	<h1>イベントツール</h1>
@@ -266,19 +247,7 @@ lunar phase, equinox, solstice, perigee, apogee, conjunction, opposition, elonga
 
 	</div>
 
-	<!-- Initialize the tables in the form -->
-
-	<script>
-
-		var tbl = document.table1; /* used globally to reference form elements */
-
-		tbl.Place.options.length = 0;
-		for (var i = 0; i < atlas.length; i++) {
-			tbl.Place.options[tbl.Place.options.length] = new Option(atlas[i].name);
-		}
-		reset1();
-
-	</script>
+	<script type="module" src="src/js/entries/eventtool-entry.js"></script>
 
 	<p><a href="toolsmanual.html#copyright" target="_blank">Copyright &copy; Ole Nielsen 2002-2005 </a></p>
 

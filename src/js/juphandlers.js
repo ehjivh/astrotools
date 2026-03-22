@@ -19,11 +19,11 @@ function rewrite2() {
 function reset1() {
 	// reset1 restores the input table to its default settings
 	// initialize date from system clock
+	j_init();
 	tbl.grs.value = jupiter.grs_lon;
 	setNow();
 	tbl.Place.selectedIndex = 0;
 	updateplace(true);
-	j_init();
 } // end reset1()
 
 
