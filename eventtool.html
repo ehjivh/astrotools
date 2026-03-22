@@ -1,0 +1,291 @@
+<!doctype html>
+
+<html lang="ja">
+
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>JavaScript AstroTools: イベントツール</title>
+	<meta http-equiv="content-type" content="text/html">
+
+	<meta name="Author" content="Ole Nielsen">
+	<meta name="Description" content="Javascript tool for searching solar, lunar and planetary events (conjunctions, oppositions, lunar phases, apo/perigee, max elongations etc)">
+	<meta name="KeyWords" content="astronomical calculation, javascript, sun, moon, planet, events,
+lunar phase, equinox, solstice, perigee, apogee, conjunction, opposition, elongation">
+	<base target="_top">
+	<link rel="stylesheet" type="text/css" href="assets/css/calc.css">
+	<style type="text/css">
+		P,
+		H1,
+		h3,
+		H4 {
+			text-align: center
+		}
+
+		.title1 {
+			font-weight: bold;
+			color: #000;
+			font-size: 16px
+		}
+
+		TD.input1 {
+			background-color: #ee9;
+			padding: 3px
+		}
+
+		input.if {
+			font-size: 13px;
+		}
+
+		.interface {
+			margin: 0px;
+			border: 0px;
+			padding: 2px;
+			font-size: 13px;
+		}
+
+		.button {
+			background: #ccc;
+			color: black;
+			font-size: 11px;
+		}
+
+		.inputfield {
+			background: #eee;
+			font-size: 10px;
+		}
+
+		.inputfield1 {
+			background: #ee9;
+			font-size: 10px;
+		}
+
+		.innertable {
+			border: 0px;
+			width: 600px;
+		}
+	</style>
+
+	<script src="src/js/observer.js"></script>
+	<script src="src/js/datetime.js"></script>
+	<script src="src/js/cookie.js"></script>
+	<script src="src/js/planets.js"></script>
+	<script src="src/js/sunmoon.js"></script>
+	<script src="src/js/makeevent.js"></script>
+	<script src="src/js/util.js"></script>
+	<script src="src/js/math.js"></script>
+	<script src="src/js/eventhandlers.js"></script>
+
+	<script>
+		var timer_on = false;		// if true show timer alert box, for measuring performance
+		var debug_on = false;
+
+		var datecount = new Array(1, 2, 3, 5, 7, 10, 14, 18, 21, 28, -1, -2, -3, -6, -12, -24, -60, -120, -240, -600, -1200);
+		var daystep = new Array(1 / 24.0, 1 / 12.0, 1 / 6.0, 0.25, 0.5, 1, 2, 3, 4, 5, 7, 10, 14, 21, 27.3217, 28, 29.5306, -1, -2, -3, -6, -12, -24, -60);
+		var objlist = new Array(9, 10, 0, 1, 3, 4, 5, 6, 7, 15, 20, 100);	// object numbers (object options)
+		var SEL_EV = 0, SEASON = 1, PHASE = 2, ALL_EV = 3;
+	</script>
+</head>
+
+<body onLoad="getCookie('HOME',observer)">
+
+	<h3>JavaScript AstroTools</h3>
+	<h1>イベントツール</h1>
+
+	<h4>太陽・月・惑星のイベント検索ツール</h4>
+	<hr>
+
+	<noscript>
+		<p><b><span style="font-size:1.5rem">このページを利用するには JavaScript を有効にしてください。</span></b></p>
+	</noscript>
+
+	<p><a href="eventmanual.html" target="_blank">ヘルプ</a></p>
+	<div style="text-align:center">
+
+		<form name="table1">
+			<!-- the form object is globally referenced through the variable tbl -->
+			<table border="1" cellpadding="3">
+				<tr>
+					<td class="title1" width="100">観測地とタイムゾーン</td>
+					<td>
+						<table class="innertable" cellspacing="0">
+							<tr>
+								<td class="interface" width="34%"> 観測地 <input class="inputfield1" type="text" size="17" name="Placename" onchange="updateplace(false)"></td>
+								<td class="interface">タイムゾーン: UTC
+									<input class="inputfield1" type="text" size="6" name="ut_offset" value="" onchange="setUTCOff()">
+								</td>
+								<td class="interface">選択:
+									<!-- The Place select is altered below by JavaScript -->
+									<select class="inputfield" name="Place" onchange="updateplace(true)">
+										<option>ホーム観測地を選択</option>
+										<option>ユーザー観測地</option>
+									</select>
+								</td>
+							</tr>
+							<tr>
+								<td class="interface">経度
+									<input class="inputfield1" type="text" size="6" name="Longitude" onchange="updatell()">
+									<select class="inputfield1" name="West" onchange="updatell()">
+										<option>W</option>
+										<option>E</option>
+									</select>
+								</td>
+								<td class="interface">
+									<input class="button" type="checkbox" name="DSTactive" value="yes" onclick="setTZ(true)"> 夏時間(DST)
+								</td>
+								<td class="interface">
+									<input class="button" type="button" name="setcookie" value="保存(Cookie)" onclick="setCookie('HOME',observer)">
+								</td>
+							</tr>
+							<tr>
+								<td class="interface">緯度 &nbsp;
+									<input class="inputfield1" type="text" size="6" name="Latitude" onchange="updatell()">
+									<select class="inputfield1" name="North" onchange="updatell()">
+										<option>N</option>
+										<option>S</option>
+									</select>
+								</td>
+								<td class="interface"><input class="button" type="button" name="fromrtc" value="PCの設定を使用" onclick="setTZ(false)">
+								</td>
+								<td class="interface">
+									<input class="button" type="button" name="getcookie" value="読込" onclick="getCookie('HOME',observer)">
+									<input class="button" type="button" name="delcookie" value="Cookie削除" onclick="deleteCookie('HOME')">
+								</td>
+							</tr>
+
+						</table>
+					</td>
+				</tr>
+
+				<tr>
+					<td class="title1">開始日</td>
+					<td>
+						<table class="innertable" cellspacing="0">
+							<tr>
+								<td class="interface" width="34%">
+									日付 <input type="text" class="inputfield1" size="10" name="local_date" value="" onchange="setDateTime(0)">
+								</td>
+								<td class="interface">
+									<input class="button" type="button" name="incrdecr" value="-7" onclick="setDateTime(-7*1440)">
+									<input class="button" type="button" name="incrdecr" value="-1" onclick="setDateTime(-1440)">
+									<input class="button" type="button" name="incrdecr" value="+1" onclick="setDateTime(1440)">
+									<input class="button" type="button" name="incrdecr" value="+7" onclick="setDateTime(7*1440)"> 日
+								</td>
+								<td class="interface">
+									<input class="button" type="button" name="fromrtc" value="現在" onclick="setNow()">
+								</td>
+							</tr>
+						</table>
+					</td>
+				</tr>
+
+				<tr>
+					<td class="title1">期間</td>
+					<td>
+						<table class="innertable" cellspacing="0">
+							<tr>
+								<td class="interface" width="34%">期間:
+									<select name="Times" class="inputfield1">
+										<option>1 day</option>
+										<option>2 days</option>
+										<option>3 days</option>
+										<option>5 days</option>
+										<option>7 days</option>
+										<option>10 days</option>
+										<option>14 days</option>
+										<option>18 days</option>
+										<option>21 days</option>
+										<option>28 days</option>
+										<option selected>1 month</option>
+										<option>2 months</option>
+										<option>3 months</option>
+										<option>6 months</option>
+										<option>1 year</option>
+										<option>2 years</option>
+										<option>5 years</option>
+										<option>10 years</option>
+										<option>20 years</option>
+										<option>50 years</option>
+										<option>100 years</option>
+									</select>
+								</td>
+								<td class="interface">
+								</td>
+							</tr>
+						</table>
+					</td>
+				</tr>
+
+
+				<tr>
+					<td class="title1">イベント</td>
+					<td>
+						<table cellspacing="6" align="left">
+							<tr>
+								<td>太陽イベント:</td>
+								<td><input type="checkbox" name="season" checked>季節点&nbsp;
+									<input type="checkbox" name="perihelion">近日点/遠日点&nbsp;
+								</td>
+							</tr>
+							<tr>
+								<td>月イベント:</td>
+								<td><input type="checkbox" name="phase" checked>月相&nbsp;
+									<input type="checkbox" name="perigee">近地点/遠地点&nbsp;
+								</td>
+							</tr>
+							<tr>
+								<td>惑星イベント:</td>
+								<td>合: <input type="checkbox" name="solconj" checked>太陽&nbsp;
+									<input type="checkbox" name="moonconj">月&nbsp;
+									<input type="checkbox" name="planconj">惑星&nbsp;
+								</td>
+							</tr>
+							<tr>
+								<td></td>
+								<td><input type="checkbox" name="elong">最大離角&nbsp;
+									<input type="checkbox" name="quadrature">矩&nbsp;
+								</td>
+							</tr>
+							<tr>
+								<td></td>
+								<td><input type="button" class="button" value="すべて選択" name="ss" onclick="setAll(true)">
+									<input type="button" class="button" value="すべて解除" name="ss" onclick="setAll(false)">
+								</td>
+							</tr>
+							<tr>
+								<td><input type="button" class="tbut" value="検索" name="search" onclick="switchboard(SEL_EV)"></td>
+								<td><input type="button" class="button" value="季節点" name="ss" onclick="switchboard(SEASON)">
+									<input type="button" class="button" value="月相" name="ss" onclick="switchboard(PHASE)">
+								</td>
+							</tr>
+						</table>
+					</td>
+				</tr>
+			</table>
+		</form>
+
+	</div>
+
+	<!-- Initialize the tables in the form -->
+
+	<script>
+
+		var tbl = document.table1; /* used globally to reference form elements */
+
+		tbl.Place.options.length = 0;
+		for (var i = 0; i < atlas.length; i++) {
+			tbl.Place.options[tbl.Place.options.length] = new Option(atlas[i].name);
+		}
+		reset1();
+
+	</script>
+
+	<p><a href="toolsmanual.html#copyright" target="_blank">Copyright &copy; Ole Nielsen 2002-2005 </a></p>
+
+	<hr>
+	<p><a href="astrotools2.html">Astrotools メニューに戻る</a></p>
+
+
+</body>
+
+</html>

@@ -1,0 +1,448 @@
+<!doctype html>
+
+<html lang="ja">
+
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>JavaScript AstroTools: 天体暦ツール</title>
+	<meta http-equiv="content-type" content="text/html">
+
+	<meta name="Author" content="Ole Nielsen">
+	<meta name="Description" content="Javascript calculation and display of ephemerides in graphical or text format">
+	<meta name="KeyWords" content="astronomical calculation, ephemeris, javascript, sun, twilight, moon, planet, planets, visibility, stars, deep sky, skyplanner">
+	<base target="_top">
+	<link rel="stylesheet" type="text/css" href="assets/css/calc.css">
+	<style type="text/css">
+		P,
+		H1,
+		h3,
+		H4 {
+			text-align: center
+		}
+
+		.title1 {
+			font-weight: bold;
+			color: #000;
+			font-size: 16px
+		}
+
+		TD.input1 {
+			background-color: #ee9;
+			padding: 3px
+		}
+
+		.interface {
+			margin: 0px;
+			border: 0px;
+			padding: 2px;
+			font-size: 13px;
+		}
+
+		.button {
+			background: #ccc;
+			color: black;
+			font-size: 11px;
+		}
+
+		.inputfield {
+			background: #eee;
+			font-size: 10px;
+		}
+
+		.inputfield1 {
+			background: #ee9;
+			font-size: 10px;
+		}
+
+		.innertable {
+			border: 0px;
+			width: 600px;
+		}
+	</style>
+
+	<script src="src/js/observer.js"></script>
+	<script src="src/js/datetime.js"></script>
+	<script src="src/js/cookie.js"></script>
+	<script src="src/js/makelist.js"></script>
+	<script src="src/js/makepage.js"></script>
+	<script src="src/js/planets.js"></script>
+	<script src="src/js/sunmoon.js"></script>
+	<script src="src/js/comet.js"></script>
+	<script src="src/js/stars.js"></script>
+	<script src="src/js/util.js"></script>
+	<script src="src/js/math.js"></script>
+	<script src="src/js/events.js"></script>
+	<script src="src/js/handlers.js"></script>
+
+	<script>
+		var timer_on = false;		// if true show timer alert box, for measuring performance
+		var debug_on = false;
+
+		var datecount = new Array(1, 2, 3, 5, 7, 10, 14, 18, 21, 28, -1, -2, -3, -6, -12, -24, -60, -120, -240, -600, -1200);
+		var daystep = new Array(1 / 24.0, 1 / 12.0, 1 / 6.0, 0.25, 0.5, 1, 2, 3, 4, 5, 7, 10, 14, 21, 27.3217, 28, 29.5306, -1, -2, -3, -6, -12, -24, -60);
+		var objlist = new Array(9, 10, 0, 1, 3, 4, 5, 6, 7, 15, 20, 100);	// object numbers (object options)
+
+		var aastep = new Array(5, 10, 15, 30, 60, 120);	// options for alt/az time steps
+		var obj2 = new Array(9, 10, 0, 1, 3, 4, 5, 6, 7, 20); // object numbers for second objects (separation)
+		var twl_alt = new Array(-0.833, -6.0, -12.0, -18.0); // options for sun depression angle for twilight alt/az
+		var cut_alt = new Array(0, 5, 10, 15, 20, 25, 30);  // options for star/dso min altitude
+		VIS = 0; DAT = 2; POS = 3; A_A = 4; TWI = 5; SEP = 6; L_EV = 8; P_EV = 9; STAR = 10; DEC = 0; LON = 1; ELON = 2;
+
+		// all form handling functions moved to handlers.js
+	</script>
+</head>
+
+<body onLoad="getCookie('HOME',observer)">
+
+	<h3>JavaScript AstroTools</h3>
+	<h1>天体暦ツール</h1>
+
+	<h4>太陽・月・惑星・彗星・恒星・深宇宙天体の天体暦</h4>
+	<hr>
+
+	<noscript>
+		<p><b><span style="font-size:1.5rem">このページを利用するには JavaScript を有効にしてください。</span></b></p>
+	</noscript>
+
+	<p>使い方・著作権・謝辞・ソースコード等は <a href="toolsmanual.html" target="_blank">マニュアル</a> をご覧ください。</p>
+	<div style="text-align:center">
+
+		<form name="table1">
+			<!-- the form object is globally referenced through the variable tbl -->
+			<table border="1" cellpadding="3">
+				<tr>
+					<td class="title1" width="100">観測地とタイムゾーン</td>
+					<td>
+						<table class="innertable" cellspacing="0">
+							<tr>
+								<td class="interface" width="34%"> 観測地: <input class="inputfield1" type="text" size="17" name="Placename" onchange="updateplace(false)"></td>
+								<td class="interface">タイムゾーン: UTC
+									<input class="inputfield1" type="text" size="6" name="ut_offset" value="" onchange="setUTCOff()">
+								</td>
+								<td class="interface">選択:
+									<!-- The Place select is altered below by JavaScript -->
+									<select class="inputfield" name="Place" onchange="updateplace(true)">
+										<option>ホーム観測地を選択</option>
+										<option>ユーザー観測地</option>
+									</select>
+								</td>
+							</tr>
+							<tr>
+								<td class="interface">経度
+									<input class="inputfield1" type="text" size="6" name="Longitude" onchange="updatell()">
+									<select class="inputfield1" name="West" onchange="updatell()">
+										<option>W</option>
+										<option>E</option>
+									</select>
+								</td>
+								<td class="interface">
+									<input class="button" type="checkbox" name="DSTactive" value="yes" onclick="setTZ(true)"> 夏時間(DST)
+								</td>
+								<td class="interface">
+									<input class="button" type="button" name="setcookie" value="保存(Cookie)" onclick="setCookie('HOME',observer)">
+								</td>
+							</tr>
+							<tr>
+								<td class="interface">緯度 &nbsp;
+									<input class="inputfield1" type="text" size="6" name="Latitude" onchange="updatell()">
+									<select class="inputfield1" name="North" onchange="updatell()">
+										<option>N</option>
+										<option>S</option>
+									</select>
+								</td>
+								<td class="interface"><input class="button" type="button" name="fromrtc" value="PCの設定を使用" onclick="setTZ(false)">
+								</td>
+								<td class="interface">
+									<input class="button" type="button" name="getcookie" value="読込" onclick="getCookie('HOME',observer)">
+									<input class="button" type="button" name="delcookie" value="Cookie削除" onclick="deleteCookie('HOME')">
+								</td>
+							</tr>
+
+						</table>
+					</td>
+				</tr>
+
+				<tr>
+					<td class="title1">日付と時刻</td>
+					<td>
+						<table class="innertable" cellspacing="0">
+							<tr>
+								<td class="interface" width="34%">
+									日付 <input type="text" class="inputfield1" size="10" name="local_date" value="" onchange="setDateTime(0)">
+								</td>
+								<td class="interface">
+									<input class="button" type="button" name="incrdecr" value="-7" onclick="setDateTime(-7*1440)">
+									<input class="button" type="button" name="incrdecr" value="-1" onclick="setDateTime(-1440)">
+									<input class="button" type="button" name="incrdecr" value="+1" onclick="setDateTime(1440)">
+									<input class="button" type="button" name="incrdecr" value="+7" onclick="setDateTime(7*1440)"> 日
+								</td>
+								<td class="interface">
+									<input class="button" type="button" name="fromrtc" value="現在" onclick="setNow()">
+								</td>
+							</tr>
+							<tr>
+								<td class="interface">
+									時刻 <input type="text" class="inputfield1" size="5" name="local_time" value="" onchange="setDateTime(0)">
+								</td>
+								<td class="interface">
+									<input class="button" type="button" name="incrdecr" value="-1時間" onclick="setDateTime(-60)">
+									<input class="button" type="button" name="incrdecr" value="+1時間" onclick="setDateTime(60)">
+								</td>
+								<td class="interface">
+									<input class="button" type="button" name="setnoon" value="午前0時" onclick="set12(false)">
+									<input class="button" type="button" name="setnoon" value="正午" onclick="set12(true)">
+								</td>
+							</tr>
+							<tr>
+								<td class="interface">ユリウス日 <input class="inputfield" type="text" size="11" name="julian" value="" onchange="jd2dt()"></td>
+								<td class="interface">恒星時 <input class="inputfield" type="text" size="5" name="siderial" value="" readonly></td>
+								<td class="interface"></td>
+							</tr>
+						</table>
+					</td>
+				</tr>
+
+				<tr>
+					<td class="title1">期間</td>
+					<td>
+						<table class="innertable" cellspacing="0">
+							<tr>
+								<td class="interface" width="34%">期間:
+									<select name="Times" class="inputfield1">
+										<option>1日</option>
+										<option>2日</option>
+										<option>3日</option>
+										<option>5日</option>
+										<option selected>7日</option>
+										<option>10日</option>
+										<option>14日</option>
+										<option>18日</option>
+										<option>21日</option>
+										<option>28日</option>
+										<option>1か月</option>
+										<option>2か月</option>
+										<option>3か月</option>
+										<option>6か月</option>
+										<option>1年</option>
+										<option>2年</option>
+										<option>5年</option>
+										<option>10年</option>
+										<option>20年</option>
+										<option>50年</option>
+										<option>100年</option>
+									</select>
+								</td>
+								<td class="interface">時間刻み:
+									<select name="Step" class="inputfield1">
+										<option>1時間</option>
+										<option>2時間</option>
+										<option>4時間</option>
+										<option>6時間</option>
+										<option>12時間</option>
+										<option selected>1日</option>
+										<option>2日</option>
+										<option>3日</option>
+										<option>4日</option>
+										<option>5日</option>
+										<option>7日</option>
+										<option>10日</option>
+										<option>14日</option>
+										<option>21日</option>
+										<option>恒星月</option>
+										<option>28日</option>
+										<option>朔望月</option>
+										<option>1か月</option>
+										<option>2か月</option>
+										<option>3か月</option>
+										<option>6か月</option>
+										<option>1年</option>
+										<option>2年</option>
+										<option>5年</option>
+									</select>
+								</td>
+							</tr>
+						</table>
+					</td>
+				</tr>
+
+				<tr>
+					<td class="title1">天体</td>
+					<td>
+						<table class="innertable" cellspacing="0">
+							<tr>
+								<td class="interface" width="34%">
+									<select name="object" class="inputfield1">
+										<option>太陽</option>
+										<option selected>月</option>
+										<option>水星</option>
+										<option>金星</option>
+										<option>火星</option>
+										<option>木星</option>
+										<option>土星</option>
+										<option>天王星</option>
+										<option>海王星</option>
+										<option>彗星</option>
+										<option>ユーザー天体</option>
+										<option>全惑星</option>
+									</select>
+								</td>
+								<td></td>
+							</tr>
+							<tr>
+								<td class="interface">彗星:<br>
+									<select name="comet" class="inputfield" onchange="updatecomet()">
+										<option>彗星を選択</option>
+									</select>
+								</td>
+								<td class="interface" colspan="3">近日点通過日 <br>
+									<input class="inputfield" type="text" size="15" name="perihel" value="" readonly>
+								</td>
+							</tr>
+							<tr>
+								<td class="interface">ユーザー天体名:<br>
+									<input class="inputfield" type="text" size="20" name="objname" value="ユーザー天体" onchange="updateobject(false,false)">
+								</td>
+								<td class="interface">RA:<br>
+									<input class="inputfield" type="text" size="6" name="ra" value="00:00" onchange="updateobject(false,false)">
+								</td>
+								<td class="interface">Dec:<br>
+									<input class="inputfield" type="text" size="6" name="dec" value="+00:00" onchange="updateobject(false,false)">
+								</td>
+								<td class="interface">またはカタログから選択: <br>
+									<select class="inputfield" name="fixstar" onchange="updateobject(true,false)">
+										<option>恒星..</option>
+									</select>
+									<select class="inputfield" name="deepskyobj" onchange="updateobject(true,true)">
+										<option>深宇宙..</option>
+									</select>
+								</td>
+							</tr>
+						</table>
+					</td>
+				</tr>
+
+				<tr>
+					<td class="title1">ツール<br><br>
+						<span style="font:smaller">モード<br>
+							<input type="radio" name="outputtype" checked>グラフ<br>
+							<input type="radio" name="outputtype">テキスト<br></span>
+					</td>
+					<td>
+						<table cellspacing="6" align="left">
+							<tr>
+								<td width="150"><input type="button" class="tbut" value="日別イベント" name="tooltype" onclick="switchboard(VIS)"></td>
+								<td>表示: <input type="checkbox" name="sunrises" value="a"> 日の出・日の入り</td>
+							</tr>
+							<tr>
+								<td><input type="button" class="tbut" value="天体データ" name="tooltype" onclick="switchboard(DAT)"></td>
+								<td></td>
+							</tr>
+							<tr>
+								<td><input type="button" class="tbut" value="位置" name="tooltype" onclick="switchboard(POS)"></td>
+								<td>(グラフのみ) 選択: <input type="radio" value="Decl" name="postool" checked>赤緯
+									<input type="radio" value="Long" name="postool">黄経
+									<input type="radio" value="Elong" name="postool">離角
+								</td>
+							</tr>
+							<tr>
+								<td><input type="button" class="tbut" value="薄明時高度" name="tooltype" onclick="switchboard(TWI)"></td>
+								<td>太陽高度: <select class="inputfield" name="Twil_alt">
+										<option>-0.83度</option>
+										<option selected>-6.0度</option>
+										<option>-12.0度</option>
+										<option>-18.0度</option>
+									</select></td>
+							</tr>
+							<tr>
+								<td><input type="button" class="tbut" value="高度・方位" name="tooltype" onclick="switchboard(A_A)"></td>
+								<td>時間刻み: <select class="inputfield" name="Altaz_step">
+										<option>5分</option>
+										<option>10分</option>
+										<option>15分</option>
+										<option selected>30分</option>
+										<option>60分</option>
+										<option>120分</option>
+									</select></td>
+							</tr>
+							<tr>
+								<td><input type="button" class="tbut" value="離角" name="tooltype" onclick="switchboard(SEP)"></td>
+								<td>第2天体: <select class="inputfield" name="Object2">
+										<option>太陽</option>
+										<option>月</option>
+										<option>水星</option>
+										<option>金星</option>
+										<option>火星</option>
+										<option>木星</option>
+										<option>土星</option>
+										<option>天王星</option>
+										<option>海王星</option>
+										<option>ユーザー天体</option>
+									</select> 「高度・方位」の時間刻みを使用</td>
+							</tr>
+							<tr>
+								<td><input type="button" class="tbut" value="可視天体" name="tooltype" onclick="switchboard(STAR)">
+								</td>
+								<td><select class="inputfield" name="Starordso">
+										<option>恒星</option>
+										<option selected>深宇宙天体</option>
+									</select>
+									最低高度: <select class="inputfield" name="Cutoff_alt">
+										<option>0 deg</option>
+										<option>5 deg</option>
+										<option selected>10 deg</option>
+										<option>15 deg</option>
+										<option>20 deg</option>
+										<option>25 deg</option>
+										<option>30 deg</option>
+									</select> <input type="checkbox" name="RA_sort" value="a" checked> 赤経順で並べ替え</td>
+							</tr>
+						</table>
+					</td>
+				</tr>
+			</table>
+		</form>
+
+	</div>
+
+	<!-- Initialize the tables in the form -->
+
+	<script>
+
+		var tbl = document.table1; /* used globally to reference form elements */
+
+		tbl.Place.options.length = 0;
+		for (var i = 0; i < atlas.length; i++) {
+			tbl.Place.options[tbl.Place.options.length] = new Option(atlas[i].name);
+		}
+		reset1();
+
+		// Add all star and dso objects from 'stars.js' to the drop down lists
+		tbl.fixstar.options.length = 1;
+		for (var i = 0; i < stars.length; i++) {
+			tbl.fixstar.options[tbl.fixstar.options.length] = new Option(stars[i].star + " " + stars[i].cons);
+		}
+
+		tbl.deepskyobj.options.length = 1;
+		for (var i = 0; i < dso.length; i++) {
+			tbl.deepskyobj.options[tbl.deepskyobj.options.length] = new Option(dso[i].numb);
+		}
+
+		add_comets();
+		tbl.comet.options.length = 1;
+		for (var i = 0; i < comets.length; i++) {
+			tbl.comet.options[tbl.comet.options.length] = new Option(comets[i].name);
+		}
+		tbl.perihel.value = "";
+
+	</script>
+
+	<p><a href="toolsmanual.html#copyright" target="_blank">Copyright &copy; Ole Nielsen 2002-2005 </a></p>
+
+	<hr>
+	<p><a href="astrotools2.html">Astrotools メニューに戻る</a></p>
+
+
+</body>
+
+</html>

@@ -1,0 +1,365 @@
+<!doctype html>
+<html lang="ja">
+
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>木星いま表示</title>
+	<meta name="description" content="現在の木星とガリレオ衛星の見え方をスマホ向けに表示します。">
+	<link rel="stylesheet" type="text/css" href="assets/css/calc.css">
+	<style>
+		:root {
+			--bg0: #07111f;
+			--bg1: #0f2138;
+			--card: rgba(10, 18, 34, 0.9);
+			--text: #f2f6ff;
+			--muted: #b3c2e8;
+			--line: #29435e;
+			--accent: #4ec9ff;
+			--accent2: #ffd166;
+			--sat: #ffffff;
+			--eclipsed: #1b63ff;
+			--shadow: #1b1b1b;
+		}
+
+		* {
+			box-sizing: border-box;
+		}
+
+		body {
+			margin: 0;
+			min-height: 100svh;
+			font-family: "Segoe UI", "Hiragino Kaku Gothic ProN", "Yu Gothic", sans-serif;
+			color: var(--text);
+			background: radial-gradient(circle at 20% 15%, #1a3558 0%, var(--bg0) 45%, #050b15 100%);
+			padding: 14px;
+		}
+
+		.wrap {
+			width: min(860px, 100%);
+			margin: 0 auto;
+			display: grid;
+			gap: 12px;
+		}
+
+		.card {
+			background: var(--card);
+			border: 1px solid var(--line);
+			border-radius: 14px;
+			box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+			padding: 12px;
+		}
+
+		h1 {
+			margin: 0;
+			font-size: clamp(1.1rem, 4.5vw, 1.6rem);
+			letter-spacing: 0.03em;
+		}
+
+		.sub {
+			margin: 6px 0 0;
+			color: var(--muted);
+			font-size: 0.92rem;
+		}
+
+		.toolbar {
+			display: flex;
+			flex-wrap: wrap;
+			gap: 10px 14px;
+			align-items: center;
+			justify-content: space-between;
+		}
+
+		.check {
+			display: inline-flex;
+			align-items: center;
+			gap: 8px;
+			font-size: 0.92rem;
+			color: var(--muted);
+		}
+
+		button {
+			background: #183456;
+			color: var(--text);
+			border: 1px solid #2a5d92;
+			border-radius: 8px;
+			padding: 8px 12px;
+			font-size: 0.9rem;
+		}
+
+		#view {
+			width: 100%;
+			display: block;
+			border-radius: 10px;
+			background: #000;
+			border: 1px solid #172b42;
+			aspect-ratio: 16 / 9;
+		}
+
+		.meta {
+			display: grid;
+			gap: 4px;
+			color: var(--muted);
+			font-size: 0.9rem;
+			line-height: 1.4;
+		}
+
+		.legend {
+			color: var(--muted);
+			font-size: 0.9rem;
+			line-height: 1.5;
+		}
+
+		.dot {
+			display: inline-block;
+			width: 10px;
+			height: 10px;
+			border-radius: 50%;
+			margin-right: 5px;
+			vertical-align: -1px;
+			border: 1px solid rgba(255, 255, 255, 0.25);
+		}
+
+		.dot.sat {
+			background: var(--sat);
+		}
+
+		.dot.ecl {
+			background: var(--eclipsed);
+		}
+
+		.dot.shd {
+			background: var(--shadow);
+		}
+
+		.links {
+			text-align: center;
+			font-size: 0.9rem;
+		}
+
+		.links a {
+			color: var(--accent);
+			text-decoration: none;
+		}
+
+		.links a:hover {
+			color: var(--accent2);
+			text-decoration: underline;
+		}
+	</style>
+
+	<script src="src/js/observer.js"></script>
+	<script src="src/js/datetime.js"></script>
+	<script src="src/js/util.js"></script>
+	<script src="src/js/math.js"></script>
+	<script src="src/js/jupiter.js"></script>
+</head>
+
+<body>
+	<main class="wrap">
+		<section class="card">
+			<h1>木星いま表示</h1>
+			<p class="sub">現在時刻の木星とガリレオ衛星の見え方（観測地: みさと天文台）</p>
+		</section>
+
+		<section class="card toolbar">
+			<label class="check"><input id="showNames" type="checkbox" checked>番号の横に衛星名を表示</label>
+			<button id="refreshNow" type="button">現在時刻で更新</button>
+		</section>
+
+		<section class="card">
+			<canvas id="view" width="960" height="540"></canvas>
+		</section>
+
+		<section class="card meta" id="meta"></section>
+
+		<section class="card legend">
+			衛星番号: 1=イオ、2=エウロパ、3=ガニメデ、4=カリスト<br>
+			表示: <span class="dot sat"></span>衛星、<span class="dot ecl"></span>食中、<span class="dot shd"></span>衛星の影
+		</section>
+
+		<section class="links">
+			<a href="astrotools2.html">Astrotoolsメニューに戻る</a>
+		</section>
+	</main>
+
+	<script>
+		var tbl = { Place: { selectedIndex: 0 } };
+		var satNames = ["イオ", "エウロパ", "ガニメデ", "カリスト"];
+		var canvas = document.getElementById("view");
+		var ctx = canvas.getContext("2d");
+		var meta = document.getElementById("meta");
+		var showNames = document.getElementById("showNames");
+
+		function initObserverFromAtlas(index) {
+			var site = atlas[index || 0];
+			observer.name = site.name;
+			var lat = parsecol(site.latitude);
+			observer.latitude = site.ns === 0 ? lat : -lat;
+			var lon = parsecol(site.longitude);
+			observer.longitude = site.we === 0 ? lon : -lon;
+			observer.tz = site.zone;
+			observer.dst = false;
+		}
+
+		function setObserverNowAtSite() {
+			var now = new Date();
+			var localMs = now.getTime() - observer.tz * 60000;
+			var local = new Date(localMs);
+			observer.year = local.getUTCFullYear();
+			observer.month = local.getUTCMonth() + 1;
+			observer.day = local.getUTCDate();
+			observer.hours = local.getUTCHours();
+			observer.minutes = local.getUTCMinutes();
+			observer.seconds = local.getUTCSeconds();
+		}
+
+		function resizeCanvas() {
+			var dpr = window.devicePixelRatio || 1;
+			var rect = canvas.getBoundingClientRect();
+			var w = Math.max(320, Math.floor(rect.width * dpr));
+			var h = Math.max(180, Math.floor(rect.height * dpr));
+			if (canvas.width !== w || canvas.height !== h) {
+				canvas.width = w;
+				canvas.height = h;
+			}
+		}
+
+		function labelText(i) {
+			if (showNames.checked) {
+				return i + " " + satNames[i - 1];
+			}
+			return "" + i;
+		}
+
+		function drawSatelliteDot(px, py, radius, color) {
+			ctx.beginPath();
+			ctx.arc(px, py, radius, 0, Math.PI * 2);
+			ctx.fillStyle = color;
+			ctx.fill();
+		}
+
+		function drawScene() {
+			resizeCanvas();
+			var w = canvas.width;
+			var h = canvas.height;
+			var cx = w * 0.5;
+			var cy = h * 0.48;
+			var xScale = w / 72;
+			var jupR = xScale;
+
+			ctx.clearRect(0, 0, w, h);
+			var grd = ctx.createLinearGradient(0, 0, 0, h);
+			grd.addColorStop(0, "#030a15");
+			grd.addColorStop(1, "#0a1322");
+			ctx.fillStyle = grd;
+			ctx.fillRect(0, 0, w, h);
+
+			ctx.strokeStyle = "#2e4f75";
+			ctx.lineWidth = Math.max(1, Math.floor(w / 500));
+			ctx.setLineDash([Math.max(4, w / 140), Math.max(3, w / 220)]);
+			ctx.beginPath();
+			ctx.moveTo(0, cy);
+			ctx.lineTo(w, cy);
+			ctx.stroke();
+			ctx.setLineDash([]);
+
+			var far = [];
+			var near = [];
+			for (var i = 1; i <= 4; i++) {
+				if (sat[i].z > 0) {
+					far.push(i);
+				} else {
+					near.push(i);
+				}
+			}
+
+			ctx.font = "" + Math.max(11, Math.round(w / 52)) + "px 'Segoe UI', sans-serif";
+			ctx.textBaseline = "middle";
+
+			function drawSatWithLabel(i) {
+				var s = sat[i];
+				var px = cx + s.x * xScale;
+				var py = cy - s.y * xScale;
+				var r = i >= 3 ? Math.max(3, w / 170) : Math.max(2.4, w / 205);
+				var col = s.eclipsed ? "#1b63ff" : "#ffffff";
+				drawSatelliteDot(px, py, r, col);
+				ctx.fillStyle = "#ff5252";
+				ctx.fillText(labelText(i), px + r + 4, py);
+			}
+
+			for (var f = 0; f < far.length; f++) {
+				drawSatWithLabel(far[f]);
+			}
+
+			var jup = ctx.createRadialGradient(cx - jupR * 0.35, cy - jupR * 0.25, jupR * 0.3, cx, cy, jupR);
+			jup.addColorStop(0, "#f5c089");
+			jup.addColorStop(0.55, "#d89a62");
+			jup.addColorStop(1, "#925e36");
+			ctx.fillStyle = jup;
+			ctx.beginPath();
+			ctx.arc(cx, cy, jupR, 0, Math.PI * 2);
+			ctx.fill();
+
+			for (var z = 0; z < 5; z++) {
+				var yy = cy - jupR * 0.8 + (z * jupR * 0.4);
+				ctx.strokeStyle = "rgba(115,60,28,0.40)";
+				ctx.lineWidth = Math.max(1, jupR * 0.08);
+				ctx.beginPath();
+				ctx.ellipse(cx, yy, jupR * 0.98, jupR * 0.20, 0, 0, Math.PI * 2);
+				ctx.stroke();
+			}
+
+			if (Math.abs(jupiter.grs_a) < 73) {
+				var gx = cx + 0.94 * Math.sin(jupiter.grs_a * Math.PI / 180) * jupR;
+				var gy = cy + jupR * 0.2;
+				ctx.fillStyle = "#c34f2f";
+				ctx.beginPath();
+				ctx.ellipse(gx, gy, Math.max(4, jupR * 0.16), Math.max(2, jupR * 0.11), 0, 0, Math.PI * 2);
+				ctx.fill();
+			}
+
+			for (var n = 0; n < near.length; n++) {
+				drawSatWithLabel(near[n]);
+			}
+
+			for (var sh = 1; sh <= 4; sh++) {
+				if (!sat[sh].shad_vis) {
+					continue;
+				}
+				var sx = cx + sat[sh].shx * xScale;
+				var sy = cy - sat[sh].shy * xScale;
+				drawSatelliteDot(sx, sy, Math.max(2, w / 230), "#111");
+			}
+		}
+
+		function updateMeta() {
+			var siteTime = datestring2(observer.year, observer.month, observer.day) + " " + hmstring2(observer.hours, observer.minutes, observer.seconds);
+			var utOff = hmstring(-observer.tz / 60.0, true);
+			var lines = [
+				"観測地: " + observer.name,
+				"観測地時刻: " + siteTime + " (UT " + utOff + ")",
+				"木星高度: " + fixnum(jupiter.alt, 6, 1) + "° / 木星方位: " + fixnum(jupiter.az, 6, 1) + "°",
+				"中央経度I: " + fixnum(jupiter.sys1, 6, 1) + "° / 中央経度II: " + fixnum(jupiter.sys2, 6, 1) + "°"
+			];
+			meta.innerHTML = lines.join("<br>");
+		}
+
+		function refreshNow() {
+			setObserverNowAtSite();
+			JupSitu();
+			drawScene();
+			updateMeta();
+		}
+
+		document.getElementById("refreshNow").addEventListener("click", refreshNow);
+		showNames.addEventListener("change", drawScene);
+		window.addEventListener("resize", drawScene);
+
+		initObserverFromAtlas(0);
+		refreshNow();
+		setInterval(refreshNow, 60000);
+	</script>
+</body>
+
+</html>

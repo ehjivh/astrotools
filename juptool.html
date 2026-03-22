@@ -1,0 +1,225 @@
+<!doctype html>
+
+<html lang="ja">
+
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>木星の衛星の見え方（ガリレオ衛星）</title>
+	<meta http-equiv="content-type" content="text/html">
+
+	<meta name="Author" content="Ole Nielsen">
+	<meta name="Description" content="Javascript calculation and display of ephemerides in graphical or text format">
+	<meta name="KeyWords" content="astronomical calculation, ephemeris, javascript, sun, twilight, moon, planet, planets, visibility, stars, deep sky, skyplanner">
+	<base target="_top">
+	<link rel="stylesheet" type="text/css" href="assets/css/calc.css">
+	<style type="text/css">
+		P,
+		H1,
+		h3,
+		H4 {
+			text-align: center
+		}
+
+		.jupif {
+			padding: 2px 3px;
+			background: black;
+			color: white;
+			font-size: 13px;
+			text-align: center;
+			border: 1px gray;
+		}
+
+		.jupbut {
+			background: #333;
+			color: white;
+			font-size: 11px;
+			margin: 2px
+		}
+
+		.inputfield {
+			background: #ddd;
+			font-size: 10px;
+			margin: 2px
+		}
+
+		.tables {
+			margin: 15px auto 0px;
+			border: 2px groove #999;
+			width: 600px;
+		}
+	</style>
+
+	<script src="src/js/observer.js"></script>
+	<script src="src/js/datetime.js"></script>
+	<script src="src/js/cookie.js"></script>
+	<script src="src/js/util.js"></script>
+	<script src="src/js/math.js"></script>
+	<script src="src/js/juphandlers.js"></script>
+	<script src="src/js/jupdraw.js"></script>
+	<script src="src/js/jupiter.js"></script>
+
+	<script>
+		var timer_on = false;		// if true show timer alert box, for measuring performance
+		var debug = true;
+
+		// all form handling functions moved to handlers.js
+	</script>
+</head>
+
+<body onLoad="getCookie('HOME',observer)">
+
+	<h1>木星の衛星の見え方（ガリレオ衛星）</h1>
+
+	<noscript>
+		<p><b><span style="font-size:1.5rem">このページを利用するには JavaScript を有効にしてください。</span></b></p>
+	</noscript>
+
+	<p><a href="jupmanual.html" target="_blank">ヘルプ</a></p>
+	<table align="center" border="1" cellpadding="0" cellspacing="0">
+		<tr>
+			<td>
+				<div id="container" style="position:relative; height:220px; width:700px; margin-left:0px auto; padding:0px;">
+					<div id="bgr" style="position:absolute; width: 700px; height:220px; background:black;"></div>
+					<script>
+						j_init();	// make initial drawing
+					</script>
+				</div>
+			</td>
+		</tr>
+	</table>
+	<p style="text-align:center; margin:8px 0 0;">
+		衛星凡例: 1=イオ、2=エウロパ、3=ガニメデ、4=カリスト
+		<br>
+		表示凡例: 白=衛星、青=食中、黒=衛星の影
+	</p>
+
+	<form name="table1">
+		<table class="tables" align="center" border="1" cellpadding="0" cellspacing="0">
+			<tr>
+				<td class="jupif">
+					日付 <input type="text" class="inputfield" size="10" name="local_date" value="" onchange="setDateTime(0)">&nbsp;&nbsp;
+					時刻 <input tye="text" class="inputfield" size="6" name="local_time" value="" onchange="setDateTime(0)"><br>
+					<input class="jupbut" type="button" name="fromrtc" value="現在" onclick="setNow()">
+					<input class="jupbut" type="button" name="setnoon" value="午前0時" onclick="set12(false)">
+					<input class="jupbut" type="button" name="setnoon" value="正午" onclick="set12(true)"> <br>
+					<input class="jupbut" type="button" name="incrdecr" value="< 12時間" onclick="setDateTime(-12*60)">
+					<input class="jupbut" type="button" name="incrdecr" value="12時間 >" onclick="setDateTime(12*60)"><br>
+					<input class="jupbut" type="button" name="incrdecr" value="< 1時間" onclick="setDateTime(-60)">
+					<input class="jupbut" type="button" name="incrdecr" value="1時間 >" onclick="setDateTime(60)"><br>
+					<input class="jupbut" type="button" name="incrdecr" value="< 10分" onclick="setDateTime(-10)">
+					<input class="jupbut" type="button" name="incrdecr" value="10分 >" onclick="setDateTime(10)"><br>
+					<input class="jupbut" type="button" name="incrdecr" value="< 1分" onclick="setDateTime(-1)">
+					<input class="jupbut" type="button" name="incrdecr" value="1分 >" onclick="setDateTime(1)">
+				</td>
+				<td class="jupif">
+					<input class="jupbut" type="button" name="zoom1" value="縮小" onclick="zoom=false; drawJup(); updateDisplay()">
+					<input class="jupbut" type="button" name="zoom1" value="拡大" onclick="zoom=true; drawJup(); updateDisplay()"><br><br>
+					<input class="jupbut" type="button" name="animate" value="<< アニメ" onclick="startAnim(true)">
+					<input class="jupbut" type="button" name="animate" value="STOP" onclick="anim=false">
+					<input class="jupbut" type="button" name="animate" value="アニメ >>" onclick="startAnim(false)"><br>
+					<select name="anispeed" class="inputfield" onChange="if (anim) startAnim(speed<0)">
+						<option>リアルタイム</option>
+						<option>1分/秒</option>
+						<option>3分/秒</option>
+						<option>10分/秒</option>
+						<option>30分/秒</option>
+						<option selected>1時間/秒</option>
+						<option>3時間/秒</option>
+						<option>10時間/秒</option>
+						<option>1日/秒</option>
+					</select>
+					<input class="jupbut" type="button" name="slower" value="低速" onclick="changeSpeed(false)">
+					<input class="jupbut" type="button" name="faster" value="高速" onclick="changeSpeed(true)"><br>
+					<br>
+					GRSの経度:
+					<input type="text" class="inputfield" size="2" name="grs" value="" onchange="jupiter.grs_lon=parseInt(tbl.grs.value); updateDisplay();">
+					<br>
+					<input type="checkbox" name="show_sat_names" onchange="updateDisplay()">番号の横に衛星名を表示
+				</td>
+			</tr>
+		</table>
+
+		<table class="tables" align="center" border="1" cellpadding="0" cellspacing="0">
+			<tr>
+				<td class="jupif">
+					<input class="jupbut" type="button" name="search" value="イベント一覧" onclick="listEvents(tbl.grs_on.checked)">
+					<select name="spanselect" class="inputfield">
+						<option>1日</option>
+						<option>3日</option>
+						<option selected>1週間</option>
+						<option>2週間</option>
+						<option>1か月</option>
+						<option>2か月</option>
+					</select>
+					<input type="checkbox" name="grs_on">GRS中央子午線通過を表示
+				</td>
+			</tr>
+		</table>
+
+		<table class="tables" align="center" border="1" cellpadding="0" cellspacing="0">
+			<tr>
+				<td class="jupif"> 観測地:
+					<input class="inputfield" type="text" size="17" name="Placename" onchange="updateplace(false)">
+					&nbsp;&nbsp;緯度:
+					<input class="inputfield" type="text" size="6" name="Latitude" onchange="updatell()">
+					<select class="inputfield" name="North" onchange="updatell()">
+						<option>N</option>
+						<option>S</option>
+					</select>
+					&nbsp;&nbsp;経度:
+					<input class="inputfield" type="text" size="6" name="Longitude" onchange="updatell()">
+					<select class="inputfield" name="West" onchange="updatell()">
+						<option>W</option>
+						<option>E</option>
+					</select>
+				</td>
+			</tr>
+			<tr>
+				<td class="jupif">タイムゾーン: UTC
+					<input class="inputfield" type="text" size="6" name="ut_offset" value="" onchange="setUTCOff()">
+					<input class="jupbut" type="checkbox" name="DSTactive" value="yes" onclick="setTZ(true)"> 夏時間(DST)
+					<input class="jupbut" type="button" name="fromrtc" value="PCの設定を使用" onclick="setTZ(false)">
+				</td>
+			</tr>
+			<tr>
+				<td class="jupif">または選択:
+					<!-- The Place select is altered below by JavaScript -->
+					<select class="inputfield" name="Place" onchange="updateplace(true)">
+						<option>ホーム観測地を選択</option>
+						<option>ユーザー観測地</option>
+					</select>&nbsp;&nbsp;&nbsp;
+					<input class="jupbut" type="button" name="setcookie" value="保存(Cookie)" onclick="setCookie('HOME',observer)">
+					<input class="jupbut" type="button" name="getcookie" value="読込" onclick="getCookie('HOME',observer)">
+					<input class="jupbut" type="button" name="delcookie" value="Cookie削除" onclick="deleteCookie('HOME')">
+				</td>
+			</tr>
+
+		</table>
+	</form>
+
+
+	<!-- Initialize the tables in the form -->
+
+	<script>
+
+		var tbl = document.table1; /* used globally to reference form elements */
+
+		tbl.Place.options.length = 0;
+		for (var i = 0; i < atlas.length; i++) {
+			tbl.Place.options[tbl.Place.options.length] = new Option(atlas[i].name);
+		}
+		reset1();
+
+	</script>
+
+	<p><a href="jupmanual.html#copyright" target="_blank">Copyright &copy; Ole Nielsen 2004-2005.
+			Astrotools is freeware under the terms of the GNU GPL</a></p>
+
+	<hr>
+	<p><a href="astrotools2.html">Astrotools メニューに戻る</a></p>
+
+
+</body>
+
+</html>
