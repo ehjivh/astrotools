@@ -21,6 +21,15 @@
 			text-align: center
 		}
 
+		.jupiter-stage {
+			max-width: 740px;
+			margin: 0 auto;
+			padding: 8px;
+			background: #111;
+			border: 1px solid #666;
+			border-radius: 10px;
+		}
+
 		.jupif {
 			padding: 2px 3px;
 			background: black;
@@ -39,6 +48,7 @@
 
 		.inputfield {
 			background: #ddd;
+			color: #111;
 			font-size: 10px;
 			margin: 2px
 		}
@@ -46,7 +56,17 @@
 		.tables {
 			margin: 15px auto 0px;
 			border: 2px groove #999;
-			width: 600px;
+			width: min(700px, 100%);
+		}
+
+		@media (max-width: 768px) {
+			.jupbut {
+				margin: 3px 1px;
+			}
+
+			.jupif {
+				padding: 8px 6px;
+			}
 		}
 	</style>
 
@@ -61,15 +81,11 @@
 	</noscript>
 
 	<p><a href="jupmanual.html" target="_blank">ヘルプ</a></p>
-	<table align="center" border="1" cellpadding="0" cellspacing="0">
-		<tr>
-			<td>
-				<div id="container" style="position:relative; height:220px; width:700px; margin-left:0px auto; padding:0px;">
-					<div id="bgr" style="position:absolute; width: 700px; height:220px; background:black;"></div>
-				</div>
-			</td>
-		</tr>
-	</table>
+	<div class="jupiter-stage">
+		<div id="container" style="position:relative; height:220px; width:700px; margin:0 auto; padding:0px;">
+			<div id="bgr" style="position:absolute; width:700px; height:220px; background:black;"></div>
+		</div>
+	</div>
 	<p style="text-align:center; margin:8px 0 0;">
 		衛星凡例: 1=イオ、2=エウロパ、3=ガニメデ、4=カリスト
 		<br>

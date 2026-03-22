@@ -62,7 +62,23 @@ lunar phase, equinox, solstice, perigee, apogee, conjunction, opposition, elonga
 
 		.innertable {
 			border: 0px;
-			width: 600px;
+			width: min(700px, 100%);
+		}
+
+		.tool-shell {
+			padding: 0 0.4rem;
+		}
+
+		@media (max-width: 768px) {
+			.title1 {
+				font-size: 15px;
+			}
+
+			.button,
+			.inputfield,
+			.inputfield1 {
+				font-size: 12px;
+			}
 		}
 	</style>
 
@@ -81,7 +97,7 @@ lunar phase, equinox, solstice, perigee, apogee, conjunction, opposition, elonga
 	</noscript>
 
 	<p><a href="eventmanual.html" target="_blank">ヘルプ</a></p>
-	<div style="text-align:center">
+	<div class="tool-shell" style="text-align:center">
 
 		<form name="table1">
 			<!-- the form object is globally referenced through the variable tbl -->
@@ -201,7 +217,7 @@ lunar phase, equinox, solstice, perigee, apogee, conjunction, opposition, elonga
 				<tr>
 					<td class="title1">イベント</td>
 					<td>
-						<table cellspacing="6" align="left">
+						<table class="tool-actions" cellspacing="6" align="left">
 							<tr>
 								<td>太陽イベント:</td>
 								<td><input type="checkbox" name="season" checked>季節点&nbsp;

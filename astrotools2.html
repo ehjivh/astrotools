@@ -21,7 +21,28 @@
 		}
 
 		.tools {
-			font-size: 20px;
+			font-size: clamp(1rem, 2.6vw, 1.25rem);
+		}
+
+		.tools-list {
+			max-width: 760px;
+			margin: 0 auto;
+			display: grid;
+			gap: 0.75rem;
+		}
+
+		.tools-list li {
+			background: rgba(255, 255, 255, 0.12);
+			border: 1px solid rgba(255, 255, 255, 0.2);
+			border-radius: 10px;
+			padding: 0.7rem 0.9rem;
+			list-style-position: inside;
+		}
+
+		@media (max-width: 768px) {
+			.tools-list {
+				padding: 0 0.4rem;
+			}
 		}
 	</style>
 
@@ -35,7 +56,7 @@
 	<h4>各種天文計算を行う JavaScript ツール集です。</h4>
 	<p><br></p>
 
-	<ul style="margin-left:150px">
+	<ul class="tools-list">
 		<li><a href="ephemtool.html" class="tools">天体暦ツール</a><br>
 			天体暦の計算とグラフ作成</li>
 		<li><a href="eventtool.html" class="tools">イベントツール</a><br>
@@ -47,7 +68,7 @@
 	</ul>
 
 	<p><br><br></p>
-	<p>AstroTools バージョン 3.4 (2005.06.05)<br>
+	<p>AstroToolsバージョン3.4 (2005.06.05)<br>
 		<a href="history.html">更新履歴</a>
 	</p>
 

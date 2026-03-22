@@ -1,20 +1,342 @@
+:root {
+	--page-bg: #3f4348;
+	--panel-bg: #d8dde4;
+	--panel-soft-bg: #eef2f7;
+	--text-main: #fff;
+	--text-dark: #111827;
+	--line-color: #7b8798;
+	--link-color: #2cf;
+	--link-visited: #4cf;
+	--link-hover: #f44;
+	--input-bg: #f8fafc;
+	--input-accent-bg: #ee9;
+	--button-bg: #d1d7e0;
+	--button-alt-bg: #cfc;
+	--content-max-width: 1060px;
+	--tool-max-width: 700px;
+	--radius: 10px;
+	--space-1: 0.25rem;
+	--space-2: 0.5rem;
+	--space-3: 0.75rem;
+	--space-4: 1rem;
+	--space-5: 1.5rem;
+	--font-base: 14px;
+	--font-small: 13px;
+}
+
+* {
+	box-sizing: border-box;
+}
+
 body {
-	color:#fff; 
-	background-color:#444; 
-	margin:10px 10px 10px 10px;
-	font-family: "Arial","Helvetica";
+	color: var(--text-main);
+	background:
+		radial-gradient(circle at 18% 12%, rgba(255, 255, 255, 0.08) 0, rgba(255, 255, 255, 0) 45%),
+		linear-gradient(180deg, #4a4a4a 0%, var(--page-bg) 45%, #3c3c3c 100%);
+	margin: var(--space-4);
+	font-family: "Segoe UI", "Hiragino Kaku Gothic ProN", "Yu Gothic", sans-serif;
+	font-size: var(--font-base);
+	line-height: 1.45;
+}
+
+body>* {
+	max-width: var(--content-max-width);
+	margin-left: auto;
+	margin-right: auto;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5 {
+	color: var(--text-main);
+	line-height: 1.25;
+}
+
+h1 {
+	text-align: center;
+}
+
+h2 {
+	font-weight: bold;
+	margin-top: 5px;
+	text-align: center;
+}
+
+h3 {
+	font-weight: bold;
+	margin-top: 18px;
+}
+
+h4 {
+	font-weight: bold;
+	margin-top: 13px;
+}
+
+h5 {
+	color: var(--text-dark);
+}
+
+p,
+td,
+ul,
+center,
+span {
+	font-size: var(--font-small);
+}
+
+table,
+td {
+	background-color: var(--panel-bg);
+	color: var(--text-dark);
+}
+
+table {
+	border-collapse: collapse;
+	width: 100%;
+	max-width: var(--tool-max-width);
+	margin-left: auto;
+	margin-right: auto;
+	border-radius: var(--radius);
+	overflow: hidden;
+	box-shadow: 0 8px 18px rgba(0, 0, 0, 0.16);
+}
+
+td,
+th {
+	padding: var(--space-2) var(--space-3);
+	vertical-align: top;
+}
+
+th {
+	font-weight: bold;
+	color: var(--text-main);
+	font-size: 15px;
+}
+
+a:link {
+	color: var(--link-color);
+	text-decoration: none;
+}
+
+a:visited {
+	color: var(--link-visited);
+	text-decoration: none;
+}
+
+a:hover {
+	color: var(--link-hover);
+	text-decoration: none;
+}
+
+:where(input, select, button, textarea) {
+	max-width: 100%;
+	font: inherit;
+}
+
+:where(input[type="text"], select, textarea) {
+	background: var(--input-bg);
+	color: var(--text-dark);
+	border: 1px solid var(--line-color);
+	border-radius: 6px;
+	padding: 0.2rem 0.4rem;
+	min-height: 2rem;
+}
+
+:where(input[type="button"], button) {
+	background: var(--button-bg);
+	color: var(--text-dark);
+	border: 1px solid #9a9a9a;
+	border-radius: 6px;
+	padding: 0.32rem 0.6rem;
+	cursor: pointer;
+}
+
+:where(input[type="button"], button):hover {
+	filter: brightness(0.95);
+}
+
+hr {
+	max-width: var(--content-max-width);
+	border: 0;
+	border-top: 1px solid rgba(255, 255, 255, 0.35);
+	margin: var(--space-4) auto;
+}
+
+.new {
+	color: #ff0;
+	font-style: italic;
+	font-size: 12px;
+}
+
+.tbut {
+	width: 150px;
+	font-weight: bold;
+	background-color: var(--button-alt-bg);
+}
+
+input.text1 {
+	color: #f00;
+}
+
+form[name="table1"] {
+	width: min(var(--content-max-width), 100%);
+	margin: 0 auto;
+	padding: 0 var(--space-2);
+	animation: layout-fade-in 0.35s ease-out;
+}
+
+form[name="table1"]>table {
+	max-width: var(--content-max-width);
+	width: 100%;
+	background: var(--panel-bg);
+}
+
+form[name="table1"]>table>tbody>tr>td:first-child {
+	width: 140px;
+	white-space: normal;
+	font-weight: 600;
+}
+
+.innertable,
+.tables {
+	width: 100% !important;
+	max-width: var(--tool-max-width);
+	margin: var(--space-3) auto 0;
+	box-shadow: none;
+}
+
+table.tool-actions {
+	width: 100%;
+	max-width: var(--tool-max-width);
+	margin: 0;
+	box-shadow: none;
+}
+
+.innertable td,
+.tables td {
+	background-color: var(--panel-soft-bg);
+}
+
+.tables td.jupif {
+	background-color: #101010;
+	color: #f4f7ff;
+}
+
+table[align="center"],
+table[align="left"] {
+	margin-left: auto;
+	margin-right: auto;
+	float: none;
+}
+
+#container {
+	width: min(700px, 100%) !important;
+	height: auto !important;
+	aspect-ratio: 700 / 220;
+	margin: 0 auto !important;
+	position: relative !important;
+	padding: 0 !important;
+	border-radius: var(--radius);
+	overflow: hidden;
+}
+
+#bgr,
+#container canvas {
+	position: absolute !important;
+	inset: 0;
+	width: 100% !important;
+	height: 100% !important;
+}
+
+@keyframes layout-fade-in {
+	from {
+		opacity: 0;
+		transform: translateY(6px);
 	}
-H1 {color:#fff; text-align:center}
-H2 {font-weight:bold; color:#fff; margin-top:5px; text-align:center}
-H3 {font-weight:bold; color:#fff; margin-top:18px}
-H4 {font-weight:bold; color:#fff; margin-top:13px}
-H5 {color:#000}
-P,TD,UL,CENTER, SPAN  {font-size:13px;}
-TABLE,TD {background-color:#bbb; color:#000; }
-TH {font-weight:bold; color:#fff; font-size:15px}
-A:link {color:#2cf; text-decoration: none}
-A:visited {color:#4cf; text-decoration: none}
-A:hover {color:#f44; text-decoration: none}
-.new {color:#ff0; font-style:italic; font-size:12px}
-.tbut {width: 150px; font-weight: bold; background-color: #cfc;}
-input.text1 {color: #f00;}
+
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+@media (max-width: 768px) {
+	:root {
+		--font-base: 13px;
+		--font-small: 12px;
+	}
+
+	body {
+		margin: var(--space-2);
+	}
+
+	ul {
+		padding-left: 1.2rem;
+	}
+
+	.tbut {
+		width: 100%;
+	}
+
+	form[name="table1"]>table,
+	.innertable,
+	.tables,
+	table.tool-actions {
+		display: block;
+		max-width: 100%;
+	}
+
+	form[name="table1"]>table>tbody,
+	form[name="table1"]>table>tbody>tr,
+	form[name="table1"]>table>tbody>tr>td,
+	.innertable>tbody,
+	.innertable>tbody>tr,
+	.innertable>tbody>tr>td,
+	.tables>tbody,
+	.tables>tbody>tr,
+	.tables>tbody>tr>td {
+		display: block;
+		width: 100% !important;
+	}
+
+	table.tool-actions>tbody,
+	table.tool-actions>tbody>tr,
+	table.tool-actions>tbody>tr>td {
+		display: block;
+		width: 100% !important;
+	}
+
+	.innertable>tbody>tr,
+	.tables>tbody>tr,
+	table.tool-actions>tbody>tr {
+		display: grid;
+		grid-template-columns: 1fr;
+		gap: var(--space-2);
+		padding: var(--space-2);
+	}
+
+	form[name="table1"]>table>tbody>tr {
+		display: grid;
+		grid-template-columns: 1fr;
+		gap: var(--space-2);
+		margin-bottom: var(--space-3);
+	}
+
+	form[name="table1"]>table>tbody>tr>td:first-child {
+		width: 100%;
+		padding: var(--space-2) var(--space-3);
+	}
+
+	input[type="button"],
+	button,
+	select,
+	input[type="text"] {
+		min-height: 2.25rem;
+	}
+
+	#container {
+		aspect-ratio: 16 / 7;
+	}
+}

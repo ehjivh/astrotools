@@ -57,7 +57,23 @@
 
 		.innertable {
 			border: 0px;
-			width: 600px;
+			width: min(700px, 100%);
+		}
+
+		.tool-shell {
+			padding: 0 0.4rem;
+		}
+
+		@media (max-width: 768px) {
+			.title1 {
+				font-size: 15px;
+			}
+
+			.button,
+			.inputfield,
+			.inputfield1 {
+				font-size: 12px;
+			}
 		}
 	</style>
 
@@ -76,7 +92,7 @@
 	</noscript>
 
 	<p>使い方・著作権・謝辞・ソースコード等は <a href="toolsmanual.html" target="_blank">マニュアル</a> をご覧ください。</p>
-	<div style="text-align:center">
+	<div class="tool-shell" style="text-align:center">
 
 		<form name="table1">
 			<!-- the form object is globally referenced through the variable tbl -->
@@ -299,7 +315,7 @@
 							<input type="radio" name="outputtype">テキスト<br></span>
 					</td>
 					<td>
-						<table cellspacing="6" align="left">
+						<table class="tool-actions" cellspacing="6" align="left">
 							<tr>
 								<td width="150"><input type="button" class="tbut" value="日別イベント" name="tooltype" onclick="switchboard(VIS)"></td>
 								<td>表示: <input type="checkbox" name="sunrises" value="a"> 日の出・日の入り</td>
