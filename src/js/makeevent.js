@@ -4,8 +4,8 @@
 // Copyright Ole Nielsen 2002-2005
 
 
-var head1 = "<!doctype html public \"-//w3c//dtd html 4.0 transitional//en\">\n<HTML><HEAD><TITLE>";
-var head2 = "</TITLE><style>\npre {font-size:12px}\n</style></HEAD><BODY>";
+const head1 = "<!doctype html public \"-//w3c//dtd html 4.0 transitional//en\">\n<HTML><HEAD><TITLE>";
+const head2 = "</TITLE><style>\npre {font-size:12px}\n</style></HEAD><BODY>";
 
 
 function nextDate(obs1, dstep, origday) {
@@ -24,7 +24,7 @@ function nextDate(obs1, dstep, origday) {
 		month_length[1] = leapyear(obs1.year) ? 29 : 28; // check for leapyear
 		obs1.day = (origday > month_length[obs1.month - 1] ? month_length[obs1.month - 1] : origday);
 	} else { // dstep is in days (max 31)
-		var m = Math.round(1440 * (dstep - Math.floor(dstep)));
+		let m = Math.round(1440 * (dstep - Math.floor(dstep)));
 		obs1.minutes += m - 60 * (Math.floor(m / 60));
 		obs1.hours += Math.floor(m / 60);
 		obs1.day += Math.floor(dstep);
@@ -51,15 +51,15 @@ function nextDate(obs1, dstep, origday) {
 
 function pheader(doc, obj, obs, title, descrip, line1, line2) {
 	// common code for page header
-	var str = head1 + "AstroTools: " + title + head2;
+	let str = `${head1}AstroTools: ${title}${head2}`;
 	str += "<p><A HREF=\"javascript:window.close()\">ウィンドウを閉じる</A></p>\n";
-	str += "<h2>" + title + "</h2><p><b>" + descrip + "</b></p>";
+	str += `<h2>${title}</h2><p><b>${descrip}</b></p>`;
 	if (obj >= 0 && obj < 100) str += "<h3>天体: " + bodies[obj].name + "</h3>";
 	if (obj == 100) str += "<h3>天体: 全惑星</h3>";
 	str += "<p>観測地: " + sitename();
 	str += " (UT " + hmstring(-obs.tz / 60.0, true) + ")</p>\n";
-	var line3 = "";
-	for (var i = 0; i < line2.length; i++) line3 += "-";
+	let line3 = "";
+	for (let i = 0; i < line2.length; i++) line3 += "-";
 	str += "<pre>" + line1 + "\n" + line2 + "\n" + line3 + "\n";
 	doc.write(str);
 } //	end pheader()
@@ -67,9 +67,9 @@ function pheader(doc, obj, obs, title, descrip, line1, line2) {
 
 function pbottom(doc, pwin, line2) {
 	// finish the page
-	var line3 = "";
-	for (var i = 0; i < line2.length; i++) line3 += "-";
-	var str = line3 + "</pre>\n";
+	let line3 = "";
+	for (let i = 0; i < line2.length; i++) line3 += "-";
+	let str = line3 + "</pre>\n";
 	str += "<p><A HREF=\"javascript:window.close()\">ウィンドウを閉じる</A></p>\n";
 	str += "</CENTER></BODY></HTML>";
 	doc.write(str);
@@ -87,28 +87,29 @@ function pbottom(doc, pwin, line2) {
 function longitudeEvents(obs, jdmax, l_events, sel) {
 	// Find equinoxes, solstices, moon phases, oppositions, mutual and solar conjunctions
 	// For each day in timespan detect if an event takes place by comparing longitudes
+	let objects;
 	if (!sel.conj_sol && !sel.conj_moon && !sel.conj_planet && !sel.quadrature) {
-		var objects = [SUN];
+		objects = [SUN];
 		if (sel.phase) objects[1] = MOON;
 	} else {
-		var objects = [SUN, MOON, MERCURY, VENUS, MARS, JUPITER, SATURN, URANUS, NEPTUNE];
+		objects = [SUN, MOON, MERCURY, VENUS, MARS, JUPITER, SATURN, URANUS, NEPTUNE];
 		if (!sel.phase && !sel.conj_moon) objects.splice(1, 1); // remove moon
 	}
-	var odat0 = new Array(); // positions of all objects at start of day
-	var odat2 = new Array(); // positions at end of day
-	var jday = jd0(obs.year, obs.month, obs.day) + obs.tz / 1440.0;
-	for (var i in objects) {
-		var p = objects[i];
+	let odat0 = []; // positions of all objects at start of day
+	let odat2 = []; // positions at end of day
+	let jday = jd0(obs.year, obs.month, obs.day) + obs.tz / 1440.0;
+	for (let i in objects) {
+		let p = objects[i];
 		odat0[p] = PlanetAlt(p, jday, obs);
 	}
 	while (jday < jdmax) {
-		for (i in objects) {
-			p = objects[i];
+		for (let i in objects) {
+			let p = objects[i];
 			odat2[p] = PlanetAlt(p, jday + 1.0, obs);
 		}
-		for (i in objects) { // check for events relative to Sun
-			p = objects[i];
-			for (var a = 0; a < 360; a += 90) {
+		for (let i in objects) { // check for events relative to Sun
+			let p = objects[i];
+			for (let a = 0; a < 360; a += 90) {
 				// a = desired difference in longitude, 0 = new Moon/vernal equinox or solar conjunction, 
 				// 90 = 1st quarter/summer solstice/quadrature etc
 				if (p == SUN) {
@@ -124,20 +125,20 @@ function longitudeEvents(obs, jdmax, l_events, sel) {
 					sdat1 = PlanetAlt(SUN, jday + 0.5, obs);
 					if (p == SUN) dlon1 = rev2(sdat1[5] - a);
 					else dlon1 = rev2(odat1[5] - sdat1[5] - a);
-					var n0 = nzero(dlon0, dlon1, dlon2);
-					var jdzero = jday + 0.5 + n0 / 2;
+					let n0 = nzero(dlon0, dlon1, dlon2);
+					let jdzero = jday + 0.5 + n0 / 2;
 					if ((p == MERCURY || p == VENUS) && dlon2 < 0) // detect if inferior conjunction
-						l_events[l_events.length] = new Array(jdzero, p, SUN, 2, 0, 0);
+						l_events[l_events.length] = [jdzero, p, SUN, 2, 0, 0];
 					else
-						l_events[l_events.length] = new Array(jdzero, p, SUN, a / 90, 0, 0);
+						l_events[l_events.length] = [jdzero, p, SUN, a / 90, 0, 0];
 				}
 			}
 		}
 		if (sel.conj_moon || sel.conj_planet) {
-			for (i = 1; i < objects.length - 1; i++) { // check for mutual conjunctions, Sun ignored
-				p = objects[i];
-				for (var j = i + 1; j < objects.length; j++) {
-					var q = objects[j];
+			for (let i = 1; i < objects.length - 1; i++) { // check for mutual conjunctions, Sun ignored
+				let p = objects[i];
+				for (let j = i + 1; j < objects.length; j++) {
+					let q = objects[j];
 					dlon2 = rev2(odat2[p][5] - odat2[q][5]);
 					dlon0 = rev2(odat0[p][5] - odat0[q][5]);
 					if (SGN(dlon2) != SGN(dlon0) && Math.abs(dlon2) < 20 && Math.abs(dlon0) < 20) {
@@ -148,13 +149,13 @@ function longitudeEvents(obs, jdmax, l_events, sel) {
 						jdzero = jday + 0.5 + n0 / 2;
 						odat1 = PlanetAlt(p, jdzero, obs);
 						sdat1 = PlanetAlt(q, jdzero, obs);
-						l_events[l_events.length] = new Array(jdzero, p, q, 0, odat1[6] - sdat1[6], 0);
+						l_events[l_events.length] = [jdzero, p, q, 0, odat1[6] - sdat1[6], 0];
 					}
 				}
 			}
 		}
-		for (var i in objects) {
-			p = objects[i];
+		for (let i in objects) {
+			let p = objects[i];
 			odat0[p][5] = odat2[p][5];
 		}
 		jday += 1.0;
@@ -164,11 +165,11 @@ function longitudeEvents(obs, jdmax, l_events, sel) {
 
 function elongEvents(obs, jdmax, l_events) {
 	// Detect max elongations for Mercury, Venus
-	var e0 = new Array();
-	var e1 = new Array();
-	var e2 = new Array();
-	var jdmin = jd0(obs.year, obs.month, obs.day) + obs.tz / 1440.0;
-	var jday = jdmin;
+	let e0 = [];
+	let e1 = [];
+	let e2 = [];
+	let jdmin = jd0(obs.year, obs.month, obs.day) + obs.tz / 1440.0;
+	let jday = jdmin;
 	bodies[MERCURY].elongupdate(jday - 1.0, obs);
 	e0[0] = bodies[MERCURY].elong;
 	bodies[MERCURY].elongupdate(jday, obs);
@@ -178,8 +179,8 @@ function elongEvents(obs, jdmax, l_events) {
 	bodies[VENUS].elongupdate(jday, obs);
 	e1[1] = bodies[VENUS].elong;
 	while (jday < jdmax + 1.0) {
-		for (var i = 0; i <= 1; i++) {
-			var p = (i == 0 ? MERCURY : VENUS);
+		for (let i = 0; i <= 1; i++) {
+			let p = (i == 0 ? MERCURY : VENUS);
 			bodies[p].elongupdate(jday + 1.0, obs);
 			e2[i] = bodies[p].elong;
 			if (e1[i] > e0[i] && e1[i] > e2[i]) {
@@ -187,7 +188,7 @@ function elongEvents(obs, jdmax, l_events) {
 				jdextr = jday + n0;
 				if (jdextr >= jdmin && jdextr <= jdmax) {
 					bodies[p].elongupdate(jdextr, obs);
-					l_events[l_events.length] = new Array(jdextr, p, p, 4, bodies[p].elong, bodies[p].pa);
+					l_events[l_events.length] = [jdextr, p, p, 4, bodies[p].elong, bodies[p].pa];
 				}
 			}
 			e0[i] = e1[i];
@@ -200,11 +201,11 @@ function elongEvents(obs, jdmax, l_events) {
 
 function distEvents(obs, jdmax, l_events, sel) {
 	// Detect peri/aphelion peri/apogee
-	var e0 = new Array();
-	var e1 = new Array();
-	var e2 = new Array();
-	var jdmin = jd0(obs.year, obs.month, obs.day) + obs.tz / 1440.0;
-	var jday = jdmin;
+	let e0 = [];
+	let e1 = [];
+	let e2 = [];
+	let jdmin = jd0(obs.year, obs.month, obs.day) + obs.tz / 1440.0;
+	let jday = jdmin;
 	bodies[SUN].update(jday - 1.0, obs);
 	e0[0] = bodies[SUN].dist;
 	bodies[SUN].update(jday, obs);
@@ -214,18 +215,19 @@ function distEvents(obs, jdmax, l_events, sel) {
 	bodies[MOON].update(jday, obs);
 	e1[1] = bodies[MOON].dist;
 	while (jday < jdmax + 1.0) {
-		for (var i = 0; i <= 1; i++) {
-			var p = (i == 0 ? SUN : MOON);
+		for (let i = 0; i <= 1; i++) {
+			let p = (i == 0 ? SUN : MOON);
 			bodies[p].update(jday + 1.0, obs);
 			e2[i] = bodies[p].dist;
 			if ((e1[i] > e0[i] && e1[i] > e2[i]) || (e1[i] < e0[i] && e1[i] < e2[i])) {
-				if (e1[i] > e0[i]) var apo = true;
-				else var apo = false;
+				let apo;
+				if (e1[i] > e0[i]) apo = true;
+				else apo = false;
 				n0 = nextrem(e0[i], e1[i], e2[i]);
 				jdextr = jday + n0;
 				if (jdextr >= jdmin && jdextr <= jdmax) {
 					bodies[p].update(jdextr, obs);
-					l_events[l_events.length] = new Array(jdextr, p, p, 8, bodies[p].dist, apo);
+					l_events[l_events.length] = [jdextr, p, p, 8, bodies[p].dist, apo];
 				}
 			}
 			e0[i] = e1[i];
@@ -239,39 +241,39 @@ function distEvents(obs, jdmax, l_events, sel) {
 function doPlanetEvents(obs, dspan, sel) {
 	// Search lunar, solar and planetary events (conjunctions, quadratures, oppositions)
 	// Incl. Moon phases, Earth equinoxes, solstices etc
-	var obscopy = new Object();
-	var obsmax = new Object();
-	for (var i in obs) {
+	let obscopy = {};
+	let obsmax = {};
+	for (let i in obs) {
 		obscopy[i] = obs[i];
 		obsmax[i] = obs[i];
 	}
 	obscopy.hours = 0;
 	obscopy.minutes = 0; // set to local midnight
-	var pwin = window.open("", "planetevents", "menubar,scrollbars,resizable");
-	var doc = pwin.document;
-	var title = "月と太陽のイベント";
+	let pwin = window.open("", "planetevents", "menubar,scrollbars,resizable");
+	let doc = pwin.document;
+	let title = "月と太陽のイベント";
 	if (planets) title = "惑星イベント";
-	var descrip = "地心位置";
-	var line1 = "";
-	var line2 = "   Date       Time                Event             ";
+	let descrip = "地心位置";
+	let line1 = "";
+	let line2 = "   Date       Time                Event             ";
 	pheader(doc, -1, obs, title, descrip, line1, line2);
 	nextDate(obsmax, dspan, obs.day); // 'abuse' nextdate to calculate end time
-	var jdmax = jd(obsmax);
-	var pevents = new Array();
+	let jdmax = jd(obsmax);
+	let pevents = [];
 	longitudeEvents(obscopy, jdmax, pevents, sel);
 	if (sel.maxelong) elongEvents(obscopy, jdmax, pevents);
 	if (sel.sol_peri || sel.moon_peri) distEvents(obscopy, jdmax, pevents); // peri/apo things
 	isort(pevents); // bring out-of-order events into place
-	for (var i = 0; i < pevents.length; i++) {
-		var doprint = true;
-		var descr = "";
-		var dt = jdtocd(pevents[i][0] - obs.tz / 1440);
-		var date = datestring2(dt[0], dt[1], dt[2]);
-		var time = hmstring2(dt[4], dt[5], dt[6]);
-		var p = pevents[i][1];
-		var q = pevents[i][2];
-		var sep = pevents[i][4];
-		var ang = pevents[i][5];
+	for (let i = 0; i < pevents.length; i++) {
+		let doprint = true;
+		let descr = "";
+		let dt = jdtocd(pevents[i][0] - obs.tz / 1440);
+		let date = datestring2(dt[0], dt[1], dt[2]);
+		let time = hmstring2(dt[4], dt[5], dt[6]);
+		let p = pevents[i][1];
+		let q = pevents[i][2];
+		let sep = pevents[i][4];
+		let ang = pevents[i][5];
 		switch (pevents[i][3]) {
 			case 0: // same longitude
 				if (sel.season && p == SUN) descr = "春分";

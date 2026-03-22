@@ -2,11 +2,11 @@
 
 // various functions for handling events of user interfaces
 
-var anim = false;
-var timer0, jday0, speed; // used by animation
-var counter, dt = 0; // for benchmarking
-var speeds = new Array(1, 60, 180, 600, 1800, 3600, 3600 * 3, 3600 * 10, 3600 * 24);
-var timespans = [1, 3, 7, 14, 31, 62];
+let anim = false;
+let timer0, jday0, speed; // used by animation
+let counter, dt = 0; // for benchmarking
+const speeds = [1, 60, 180, 600, 1800, 3600, 3600 * 3, 3600 * 10, 3600 * 24];
+const timespans = [1, 3, 7, 14, 31, 62];
 
 function rewrite2() {
 	// rewrite2 updates table1 date/time info and redraws Jupiter objects
@@ -36,11 +36,11 @@ function setDateTime(rel) {
 		rewrite2();
 		return;
 	}
-	var vald = tbl.local_date.value;
+	let vald = tbl.local_date.value;
 	// date field
-	var col1 = vald.indexOf(":");
-	var col2 = vald.lastIndexOf(":");
-	var col3 = vald.length;
+	let col1 = vald.indexOf(":");
+	let col2 = vald.lastIndexOf(":");
+	let col3 = vald.length;
 	observer.year = parseInt(vald.substring(0, col1), 10);
 	month_length[1] = leapyear(observer.year) ? 29 : 28;
 	observer.month = parseInt(vald.substring(col1 + 1, col2), 10);
@@ -49,7 +49,7 @@ function setDateTime(rel) {
 		observer.day = month_length[observer.month - 1];
 	}
 	// time field
-	var valt = tbl.local_time.value;
+	let valt = tbl.local_time.value;
 	col1 = valt.indexOf(":");
 	col2 = valt.length;
 	if (col1 <= 0) col1 = col2;
@@ -66,7 +66,7 @@ function setDateTime(rel) {
 
 function setNow(settimezone, changeDST) {
 	// Handles 'Now' button
-	var now = new Date();
+	let now = new Date();
 	anim = false; // stop animation if running
 	observer.year = now.getFullYear();
 	month_length[1] = leapyear(observer.year) ? 29 : 28;
@@ -108,12 +108,12 @@ function setTZ(changeDST) {
 		observer.dst = tbl.DSTactive.checked;
 		observer.tz -= (observer.dst ? 60 : -60);
 	} else { // set time zone to computer time zone
-		var now = new Date();
+		let now = new Date();
 		observer.tz = now.getTimezoneOffset();
 		// find out if this is DST (idea picked from a discussion forum about javascript)
-		var winter = new Date(020101);
-		var summer = new Date(020701);
-		var off = Math.min(summer.getTimezoneOffset(), winter.getTimezoneOffset());
+		let winter = new Date(020101);
+		let summer = new Date(020701);
+		let off = Math.min(summer.getTimezoneOffset(), winter.getTimezoneOffset());
 		observer.dst = (observer.tz == off ? false : true)
 	}
 	rewritePlace();
@@ -124,13 +124,13 @@ function setTZ(changeDST) {
 function updateplace(fromtable) {
 	// updateplace handles the place selection in table1
 	// if 'fromtable' is true get data from 'selected' table entry, else just read Placename field
-	var ndx = tbl.Place.selectedIndex;
+	let ndx = tbl.Place.selectedIndex;
 	if (fromtable) {
 		if ((ndx >= 0) && (ndx <= atlas.length)) {
 			observer.name = atlas[ndx].name;
-			var lat = parsecol(atlas[ndx].latitude);
+			let lat = parsecol(atlas[ndx].latitude);
 			observer.latitude = atlas[ndx].ns == 0 ? lat : -lat;
-			var lon = parsecol(atlas[ndx].longitude);
+			let lon = parsecol(atlas[ndx].longitude);
 			observer.longitude = atlas[ndx].we == 0 ? lon : -lon;
 			observer.tz = atlas[ndx].zone;
 			// This code makes a lot of assumptions about typical rules
@@ -162,9 +162,9 @@ function rewritePlace() {
 
 function updatell() {
 	// updatell handles the latitude/longitude changes in table1
-	var lat = parsecol(tbl.Latitude.value);
+	let lat = parsecol(tbl.Latitude.value);
 	observer.latitude = tbl.North.selectedIndex == 0 ? lat : -lat;
-	var lon = parsecol(tbl.Longitude.value);
+	let lon = parsecol(tbl.Longitude.value);
 	observer.longitude = tbl.West.selectedIndex == 0 ? lon : -lon;
 	rewrite2();
 } // end updatell()
@@ -179,7 +179,7 @@ function changeSpeed(faster) { // handle faster and slower buttons
 
 function startAnim(revers) {
 	// start or reinitialize animation, revers=true if reverse
-	var now = new Date();
+	let now = new Date();
 	timer0 = now.getTime();
 	if (debug) counter = 0;
 	jday0 = jd(observer);
@@ -193,14 +193,14 @@ function startAnim(revers) {
 function animateJup() {
 	// run one iteration of the animation and call itself
 	if (!anim) return; // STOP pressed
-	var now = new Date();
-	var timer = now.getTime();
+	let now = new Date();
+	let timer = now.getTime();
 	if (debug) {
 		counter++;
 		dt = (timer - timer0) / counter - 10;
 	} // average measured time
-	var j = jday0 + (timer - timer0) * speed;
-	var t = jdtocd(j - observer.tz / 1440.0);
+	let j = jday0 + (timer - timer0) * speed;
+	let t = jdtocd(j - observer.tz / 1440.0);
 	tbl.local_date.value = datestring2(t[0], t[1], t[2]);
 	tbl.local_time.value = hmstring2(t[4], t[5], 0);
 	observer.year = t[0];
@@ -214,33 +214,32 @@ function animateJup() {
 }
 
 
-var head1 = "<!doctype html public \"-//w3c//dtd html 4.0 transitional//en\">\n<HTML><HEAD><TITLE>";
-var head2 = "</TITLE><style>\npre {font-size:12px}\n</style></HEAD><BODY>";
-var eventnames = new Array("通過          ", "掩蔽          ", "影通過        ", "食            ");
-var satnames = ["GRS   ", "Io (1)", "Eur(2)", "Gan(3)", "Cal(4)"];
+const head1 = "<!doctype html public \"-//w3c//dtd html 4.0 transitional//en\">\n<HTML><HEAD><TITLE>";
+const head2 = "</TITLE><style>\npre {font-size:12px}\n</style></HEAD><BODY>";
+const eventnames = ["通過          ", "掩蔽          ", "影通過        ", "食            "];
+const satnames = ["GRS   ", "Io (1)", "Eur(2)", "Gan(3)", "Cal(4)"];
 
 function listEvents(grs) {
 	// list satellite and grs events
-	var pwin = window.open("", "events", "menubar,scrollbars,resizable");
-	var doc = pwin.document;
-	var str = head1 + "木星衛星イベント" + head2;
+	let pwin = window.open("", "events", "menubar,scrollbars,resizable");
+	let doc = pwin.document;
+	let str = `${head1}木星衛星イベント${head2}`;
 	str += "<p><A HREF=\"javascript:window.close()\">ウィンドウを閉じる</A></p>\n";
 	str += "<h2>木星衛星イベント</h2><p></p>";
-	str += "<p>観測地: " + sitename();
-	str += " (UT " + hmstring(-observer.tz / 60.0, true) + ")</p>\n";
-	var line1 = "   日付       時刻  木星高度  衛星        イベント            ";
-	var line3 = "";
-	for (var i = 0; i < line1.length; i++) line3 += "-";
+	str += `<p>観測地: ${sitename()} (UT ${hmstring(-observer.tz / 60.0, true)})</p>\n`;
+	let line1 = "   日付       時刻  木星高度  衛星        イベント            ";
+	let line3 = "";
+	for (let i = 0; i < line1.length; i++) line3 += "-";
 	str += "<pre>" + line1 + "\n" + line3 + "\n";
-	var jday = jd(observer);
-	var events = searchEvents(jday, timespans[tbl.spanselect.selectedIndex]);
-	for (var i = 0; i < events.length; i++) {
+	let jday = jd(observer);
+	let events = searchEvents(jday, timespans[tbl.spanselect.selectedIndex]);
+	for (let i = 0; i < events.length; i++) {
 		if (!grs && events[i][1] == 0) continue; // no listing of grs passages desired
 		JupDat(events[i][0], observer);
 		SunDat(events[i][0], observer);
-		var vis = false;
+		let vis = false;
 		if (jupiter.alt > 3.0 && sun.alt < -3.0) vis = true;
-		var t = jdtocd(events[i][0] - observer.tz / 1440.0);
+		let t = jdtocd(events[i][0] - observer.tz / 1440.0);
 		if (vis) str += "<b>";
 		str += datestring2(t[0], t[1], t[2]) + "   ";
 		str += hmstring2(t[4], t[5], t[6]) + "  ";

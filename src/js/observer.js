@@ -18,7 +18,7 @@ function place(name, latitude, ns, longitude, we, zone, dss, dse) {
 // Customize it to your preferred location.
 // This database is based on Peter Hayes' original database with several places added
 
-var atlas = new Array(
+const atlas = [
   new place("JP:Misato Observatory", "34:08:41", 0, "135:24:24", 1, -540, "", ""),
   new place("UK:Greenwich", "51:28:38", 0, "00:00:00", 0, 0, "3:5:0", "10:5:0"),
   new place("NL:Rijswijk", "52:02:00", 0, "4:19:00", 1, -60, "3:5:0", "10:5:0"),
@@ -108,7 +108,7 @@ var atlas = new Array(
   new place("VC:St Vincent", "13:15:00", 0, "61:12:00", 0, 240, "", ""),
   new place("ZA:Cape Town", "33:56:00", 1, "18:28:00", 1, -120, "", ""),
   new place("ZM:Lusaka", "15:26:00", 1, "28:20:00", 1, -120, "", "")
-);
+];
 
 
 function observatory(place, year, month, day, hr, min, sec) {
@@ -131,13 +131,13 @@ function observatory(place, year, month, day, hr, min, sec) {
 // The default observatory (first entry in atlas, noon Jan 1 2000) 
 // changed by user setting place and time from menu
 
-var observer = new observatory(atlas[0], 2000, 1, 1, 12, 0, 0);
+const observer = new observatory(atlas[0], 2000, 1, 1, 12, 0, 0);
 
 // Site name returns name and latitude / longitude as a string
 function sitename() {
-  var sname = observer.name;
-  var latd = Math.abs(observer.latitude) + 0.00001;
-  var latdi = Math.floor(latd);
+  let sname = observer.name;
+  let latd = Math.abs(observer.latitude) + 0.00001;
+  let latdi = Math.floor(latd);
   sname += ((latdi < 10) ? " 0" : " ") + latdi;
   latm = 60 * (latd - latdi);
   latmi = Math.floor(latm);
@@ -145,8 +145,8 @@ function sitename() {
   //  lats=60*(latm-latmi); latsi=Math.floor(lats);
   //  sname+=((latsi < 10) ? ":0" : ":") + latsi;
   sname += ((observer.latitude >= 0) ? " N, " : " S, ");
-  var longd = Math.abs(observer.longitude) + 0.00001;
-  var longdi = Math.floor(longd);
+  let longd = Math.abs(observer.longitude) + 0.00001;
+  let longdi = Math.floor(longd);
   sname += ((longdi < 10) ? "0" : "") + longdi;
   longm = 60 * (longd - longdi);
   longmi = Math.floor(longm);
@@ -165,30 +165,30 @@ function checkdst(obs) {
   // We only know daylight saving if in the atlas
   if ((tbl.Place.selectedIndex < 0) || (tbl.Place.selectedIndex >= atlas.length))
     return 0;
-  var dss = atlas[tbl.Place.selectedIndex].dss;
-  var dse = atlas[tbl.Place.selectedIndex].dse;
-  var ns = atlas[tbl.Place.selectedIndex].ns;
+  let dss = atlas[tbl.Place.selectedIndex].dss;
+  let dse = atlas[tbl.Place.selectedIndex].dse;
+  let ns = atlas[tbl.Place.selectedIndex].ns;
   if (dss.length == 0) return 0;
   if (dse.length == 0) return 0;
   // parse the daylight saving start & end dates
-  var col1 = dss.indexOf(":");
-  var col2 = dss.lastIndexOf(":");
-  var col3 = dss.length;
-  var dssm = parseInt(dss.substring(0, col1), 10);
-  var dssw = parseInt(dss.substring(col1 + 1, col2), 10);
-  var dssd = parseInt(dss.substring(col2 + 1, col3), 10);
+  let col1 = dss.indexOf(":");
+  let col2 = dss.lastIndexOf(":");
+  let col3 = dss.length;
+  let dssm = parseInt(dss.substring(0, col1), 10);
+  let dssw = parseInt(dss.substring(col1 + 1, col2), 10);
+  let dssd = parseInt(dss.substring(col2 + 1, col3), 10);
   col1 = dse.indexOf(":");
   col2 = dse.lastIndexOf(":");
   col3 = dse.length;
-  var dsem = parseInt(dse.substring(0, col1), 10);
-  var dsew = parseInt(dse.substring(col1 + 1, col2), 10);
-  var dsed = parseInt(dse.substring(col2 + 1, col3), 10);
+  let dsem = parseInt(dse.substring(0, col1), 10);
+  let dsew = parseInt(dse.substring(col1 + 1, col2), 10);
+  let dsed = parseInt(dse.substring(col2 + 1, col3), 10);
   // Length of months
   // year,month,day and day of week
-  var jdt = jd0(obs.year, obs.month, obs.day);
-  var ymd = jdtocd(jdt);
+  let jdt = jd0(obs.year, obs.month, obs.day);
+  let ymd = jdtocd(jdt);
   // first day of month - we need to know day of week
-  var fymd = jdtocd(jdt - ymd[2] + 1);
+  let fymd = jdtocd(jdt - ymd[2] + 1);
   // look for daylight saving / summertime changes
   // first the simple month checks
   // Test for the northern hemisphere
@@ -203,7 +203,7 @@ function checkdst(obs) {
   // check if we are in month of change over
   if (ymd[1] == dssm) { // month of start of summer time
     // date of change over
-    var ddd = dssd - fymd[3] + 1;
+    let ddd = dssd - fymd[3] + 1;
     ddd = ddd + 7 * dssw;
     while (ddd > month_length[ymd[1] - 1]) ddd -= 7;
     if (ymd[2] < ddd) return 0;
@@ -213,7 +213,7 @@ function checkdst(obs) {
   }
   if (ymd[1] == dsem) { // month of end of summer time
     // date of change over
-    var ddd = dsed - fymd[3] + 1;
+    let ddd = dsed - fymd[3] + 1;
     ddd = ddd + 7 * dsew;
     while (ddd > month_length[ymd[1] - 1]) ddd -= 7;
     if (ymd[2] < ddd) return -60;
@@ -226,7 +226,7 @@ function checkdst(obs) {
 
 function jd(obs) {
   // The Julian date at observer time
-  var j = jd0(obs.year, obs.month, obs.day);
+  let j = jd0(obs.year, obs.month, obs.day);
   j += (obs.hours + ((obs.minutes + obs.tz) / 60.0) + (obs.seconds / 3600.0)) / 24;
   return j;
 } // jd()
@@ -234,7 +234,7 @@ function jd(obs) {
 
 function local_sidereal(obs) {
   // sidereal time in hours for observer
-  var res = g_sidereal(obs.year, obs.month, obs.day);
+  let res = g_sidereal(obs.year, obs.month, obs.day);
   res += 1.00273790935 * (obs.hours + (obs.minutes + obs.tz + (obs.seconds / 60.0)) / 60.0);
   res -= obs.longitude / 15.0;
   while (res < 0) res += 24.0;
